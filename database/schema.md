@@ -5,11 +5,11 @@
 
 userinfo
 
-|user_id | videoid | latest_timestamp | viewCount | like | dislike |
-|:------:|:-------:|:----------------:|:---------:|:----:|:-------:|
-|		 |	 	   |                  | 		  |      |         |
-|		 |		   |                  | 		  |      |         |
-|		 |		   |                  | 	      |      |         |
+|user_id | videoid | latest_timestamp | viewCount | likes | dislikes |
+|:------:|:-------:|:----------------:|:---------:|:-----:|:--------:|
+|		 |	 	   |                  | 		  |       |          |
+|		 |		   |                  | 		  |       |          |
+|		 |		   |                  | 	      |       |          |
 
 
 usercred
