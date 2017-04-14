@@ -4,18 +4,18 @@ import datetime as dt
 import _mysql
 
 from pymongo import *
-from py2neo import Graph, Node, Relationship
+from py2neo import *
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, sessionmaker
 import time
 
-
-class UserDB():
+# SQL
+class UserDB(object):
 	""" Superclass for all User database operations. """
 
 	def __init__(self):
 		self.engine = create_engine(
-			"mysql+pymysql://root:killthejoker@localhost/user?host=localhost?port=3306")
+			"mysql+pymysql://root:password@localhost/user?host=localhost?port=3306")
 		self.engine.echo = True
 		self.conn = self.engine.connect()
 		self.metadata = MetaData(self.engine)
@@ -69,8 +69,8 @@ class UserInfoDB(UserDB):
 	def upsert(self, username, videoid, likes=0, dislikes=0):
 		# Update or insert the video stats accordingly. 
 		latest_timestamp = (dt.datetime.today()).strftime('%Y-%m-%d %H:%M:%S')
-		data = self.session.query(UserInfo).filter((self.userinfo.c.user_id==username) & (self.userinfo.c.videoid==videoid))
-		# data = self.session.query(UserInfo).first((self.userinfo.c.user_id==username) & (self.userinfo.c.videoid==videoid))
+		data = self.session.query(UserInfo).filter((self.userinfo.c.user_id==username) &
+			(self.userinfo.c.videoid==videoid))
 		if data.count() > 0:
 			for instance in data:
 				instance.latest_timestamp = latest_timestamp
@@ -92,8 +92,8 @@ class UserInfoDB(UserDB):
 			return -1
 		return query
 
-
-class Video():
+# MONGODB
+class Video(object):
 	""" Superclass for videos stored in MongoDB. """
 	def __init__(self):
 		self.client = MongoClient()
@@ -150,4 +150,40 @@ class HistoryTags(Video):
 		return 1
 	def get_tags(self, uername):
 		res = self.collection.find({"user_id": username})
+		return res
+
+# NEO4J
+class VideosGraph(object):
+	""" Super class for all Neo4j queries. """
+	def __init__(self):
+		authenticate("localhost:7474", "neo4j", "password")
+		self.graph = Graph("http://localhost:7474/db/data/");
+
+class GetKNeighbours(VideosGraph):
+	""" Get K nearest neighbours of the given node. Requires the videoid
+	for search. """
+	def __init__(self, videoid, k=10):
+		k = str(k)
+		query = """
+		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		WHERE v1.videoId = %s
+		WITH v2, r.weight AS sim
+		ORDER BY sim DESC
+		LIMIT %s
+		RETURN v2.videoId AS Neighbor, sim AS Similarity
+		""" % (videoid, k)
+		res = self.graph.run(query).dump()
+		return res
+
+class UpdateWeight(VideosGraph):
+	""" Update the weight of a relation between two videos. """
+	def __init__(self, videoid1, videoid2, weight):
+		weight = str(weight)
+		query = """
+		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		WHERE v1.videoId = %s AND v2.videoId = %s
+		SET r.weight = %s
+		RETURN r
+		""" % (videoid1, videoid2, weight)
+		res = self.graph.run(query).dump()
 		return res
