@@ -97,7 +97,7 @@ class Video(object):
 	""" Superclass for videos stored in MongoDB. """
 	def __init__(self):
 		self.client = MongoClient()
-		self.db = self.client.yourtube
+		self.db = self.client.YourTube
 	
 class Comments(Video):
 	""" To store user comments for videos."""
@@ -156,7 +156,7 @@ class HistoryTags(Video):
 class VideosGraph(object):
 	""" Super class for all Neo4j queries. """
 	def __init__(self):
-		authenticate("localhost:7474", "neo4j", "password")
+		authenticate("localhost:7474", "YourTube", "pass")
 		self.graph = Graph("http://localhost:7474/db/data/");
 
 class GetKNeighbours(VideosGraph):
