@@ -19,6 +19,11 @@ class videoinfo:
 		db = client.YourTube
 		path = os.getcwd() + '/database_api/video_info/'
 
+		try:
+			db.video_info.delete_many({})
+		except:
+			pass
+
 		for filename in os.listdir(path):
 			with open(path + filename) as data_file: 
 				data = json.load(data_file)
@@ -77,10 +82,10 @@ class videorel:
 
 		graph.run("MATCH (v) DETACH DELETE v");
 		ids = [];
-		data = data[0:50];
+		data;
 		for i in range(0,len(data)):
 			d = data[i];
-			rv = graph.run("CREATE (v:video { commentCount:" + str(d['videoInfo']['statistics']['commentCount']) + ", viewCount:" + str(d['videoInfo']['statistics']['viewCount']) + ", favoriteCount:" +  str(d['videoInfo']['statistics']['favoriteCount']) + ", dislikeCount:" + str(d['videoInfo']['statistics']['dislikeCount']) + ", likeCount:" + d['videoInfo']['statistics']['likeCount'] + "}) RETURN ID(v);" );
+			rv = graph.run("CREATE (v:video { vid:" + str(d['videoInfo']['id']) + ", commentCount:" + str(d['videoInfo']['statistics']['commentCount']) + ", viewCount:" + str(d['videoInfo']['statistics']['viewCount']) + ", favoriteCount:" +  str(d['videoInfo']['statistics']['favoriteCount']) + ", dislikeCount:" + str(d['videoInfo']['statistics']['dislikeCount']) + ", likeCount:" + d['videoInfo']['statistics']['likeCount'] + "}) RETURN ID(v);" );
 			x = 12;
 			for record in rv:
 				x = record;
