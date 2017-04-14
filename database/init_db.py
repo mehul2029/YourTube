@@ -1,3 +1,5 @@
+""" Initialize and populate the Databases. """
+
 #!python3
 import os
 import json
@@ -5,7 +7,14 @@ from pymongo import MongoClient
 from py2neo import *
 
 class videoinfo:
+	""" Mongodb DB of video's raw info. """
+
 	def init_db(self):
+		""" Initialize a Mongodb database and populate it with raw info of videos.
+			Create two indexes:
+								1. Text index
+								2. Hash Index for id
+		"""
 		client = MongoClient()
 		db = client.YourTube
 		path = os.getcwd() + '/database_api/video_info/'
@@ -16,10 +25,44 @@ class videoinfo:
 				data['videoInfo']['statistics']['likeCount'] = int(data['videoInfo']['statistics']['likeCount'])
 				post_id = db.video_info.insert_one(data).inserted_id
 
+		try:
+			db.video_info.drop_index("search_index");
+		except:
+			pass
+		# Text Index is created
+		db.video_info.create_index(
+							[
+								("videoInfo.snippet.title", "text"),
+								("videoInfo.snippet.description", "text"),
+								("videoInfo.snippet.tags", "text")
+
+							],
+							name="search_index",
+							weights={
+							"videoInfo.snippet.title" : 10,
+							"videoInfo.snippet.description" : 4,
+							"videoInfo.snippet.tags" : 10
+							}
+						)
+
+		try:
+			db.video_info.drop_index("id");
+		except:
+			pass
+
+		# Hash index is created for `id`
+		db.video_info.create_index([("videoInfo.id", HASHED)], name="id");
+		
 		print("Video Info Database Set")
 
+
 class videorel:
+	""" Neo4j database to store the relation between videos.
+		Relation has a attribute called weight. """
+
 	def init_db(self):
+		""" Create and populate the Neo4j database `video`. """
+
 		files = os.listdir(os.getcwd() + '/database_api/video_info/');
 
 		authenticate("localhost:7474", "YourTube", "pass")
@@ -77,10 +120,9 @@ class videorel:
 					else:
 						same_channel = 0;
 
+					# Weight = weightage is the attribute of the relation.
 					weightage = 100*(same_channel + percentage_desc_match + 2*percentage_tag_match);
-					# print(weightage, " ", percentage_desc_match, " ", common_desc);
+
 					if (weightage > 0):
 						graph.run("MATCH (v1:video), (v2:video) WHERE ID(v1) = " + str(ids[i]) + " AND ID(v2) = " + str(ids[j]) + " CREATE (v1)-[r2:WEIGHT {weight:" + str(weightage) + "}]->(v2);");
-
-					# print i," ",j;
-
+		print("Relation between vidoes created.")
