@@ -98,6 +98,19 @@ class Video(object):
 	def __init__(self):
 		self.client = MongoClient()
 		self.db = self.client.YourTube
+
+	def search_text(query):
+		""" Search the keywords of query (string) and return a list of video info
+			in decreasing order of weight. """
+
+		res = db.video_info.find({"$text" : { "$search": query}})
+		return res
+
+	def get_video(id):
+		# id is a string.
+		
+		vid = db.video_info.find({"videoInfo.id" : id})
+		return vid
 	
 class Comments(Video):
 	""" To store user comments for videos."""
