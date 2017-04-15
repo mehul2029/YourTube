@@ -33,5 +33,6 @@ setup(
 		'sqlalchemy',
 		'mysqlclient',
 		'pymysql',
+		'pandas',
 	],
 )

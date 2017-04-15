@@ -156,21 +156,19 @@ class Videorel(object):
 class UserDB(object):
 	""" Setup the needed SQL tables. """
 	def __init__(self):
-		# requires a 'user' database in which the tables are created.
+		# Requires a 'user' database in which the tables are created.
 		engine = create_engine(
-			"mysql+pymysql://root:pass@localhost/user?host=localhost?port=3306")
+			"mysql+pymysql://root:password@localhost/user?host=localhost?port=3306")
 		engine.echo = True
 		conn = engine.connect()
 		metadata = MetaData(engine)
-		# metadata = MetaData()
 		userinfo = Table('userinfo', metadata,
-			Column('user_id', Integer),
-			Column('videoid', String(30)),
+			Column('user_id', Integer, primary_key=True),
+			Column('videoid', String(30), primary_key=True),
 			Column('latest_timestamp', String(30)),
 			Column('viewCount', Integer),
 			Column('likes', Integer),
 			Column('dislikes', Integer),
-			UniqueConstraint('user_id', 'videoid')
 			)
 
 		usercred = Table('usercred', metadata,

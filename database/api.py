@@ -29,6 +29,7 @@ class UserCredDB(UserDB):
 
 	def insert(self, username, passwd):
 		""" Create a new user. Called for Signup. """
+		
 		# Check if username already exists
 		query = self.user_cred.select(self.user_cred.c.user_id == username)
 		query = query.execute()
@@ -41,6 +42,7 @@ class UserCredDB(UserDB):
 
 	def authenticate(self, user, passwd):
 		""" Authenticate a user. """
+		
 		query = self.user_cred.select(self.user_cred.c.user_id == username)
 		if query.rowcount < 1:
 			# No such user exists
@@ -52,6 +54,7 @@ class UserCredDB(UserDB):
 			else:
 				# Successful
 				return 1
+
 class UserInfo(object):
 	""" For session queries. """
 	pass
@@ -67,7 +70,8 @@ class UserInfoDB(UserDB):
 		self.session = Session()
 
 	def upsert(self, username, videoid, likes=0, dislikes=0):
-		# Update or insert the video stats accordingly. 
+		""" Update or insert the video stats accordingly. """
+		
 		latest_timestamp = (dt.datetime.today()).strftime('%Y-%m-%d %H:%M:%S')
 		data = self.session.query(UserInfo).filter((self.userinfo.c.user_id==username) &
 			(self.userinfo.c.videoid==videoid))
@@ -95,22 +99,11 @@ class UserInfoDB(UserDB):
 # MONGODB
 class Video(object):
 	""" Superclass for videos stored in MongoDB. """
+	
 	def __init__(self):
 		self.client = MongoClient()
 		self.db = self.client.YourTube
 
-	def search_text(query):
-		""" Search the keywords of query (string) and return a list of video info
-			in decreasing order of weight. """
-
-		res = db.video_info.find({"$text" : { "$search": query}})
-		return res
-
-	def get_video(id):
-		# id is a string.
-		
-		vid = db.video_info.find({"videoInfo.id" : id})
-		return vid
 	
 class Comments(Video):
 	""" To store user comments for videos."""
@@ -133,19 +126,33 @@ class Comments(Video):
 		res = self.collection.find( { "videoid": videoid } )
 		return res
 
+
 class VideoInfo(Video):
 	""" To store the entire videoinfo. Initial scraped info. """
+	
 	def __init__(self):
 		super(VideoInfo, self).__init__()
 		self.collection = (self.db).videoinfo
 
-	def get(self, videoid):
-		# Returns all docs for now.
-		res = self.collection.find()
+	def get_video(self, videoid):
+		res = self.collection.find({"videoInfo.id" : videoid})
 		return res
+
+	def search_text(self, query):
+		""" Search the keywords of query (string) and return a list of video info
+			in decreasing order of weight. """
+
+		res = self.collection.find({"$text" : { "$search": query}})
+		return res
+
+	def get_tags(self, videoid):
+		res = self.collection.find({"videoInfo.id" : videoid})
+		return res
+
 
 class HistoryTags(Video):
 	""" To store tags accessed by this user in the past. """
+	
 	def __init__(self):
 		super(HistoryTags, self).__init__()
 		self.collection = (self.db).historytags
@@ -163,40 +170,41 @@ class HistoryTags(Video):
 		return 1
 	def get_tags(self, uername):
 		res = self.collection.find({"user_id": username})
-		return res
+		return res['videoInfo']['snippet']['tags']
 
 # NEO4J
 class VideosGraph(object):
-	""" Super class for all Neo4j queries. """
+	""" Class for all Neo4j queries. """
+	
 	def __init__(self):
 		authenticate("localhost:7474", "YourTube", "pass")
 		self.graph = Graph("http://localhost:7474/db/data/");
 
-class GetKNeighbours(VideosGraph):
-	""" Get K nearest neighbours of the given node. Requires the videoid
-	for search. """
-	def __init__(self, videoid, k=10):
+	def get_neighbours(self, videoid, k=15):
+		""" Get K nearest neighbours of the given node. Requires the videoid
+			for search. """
+		
 		k = str(k)
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
-		WHERE v1.videoId = %s
+		WHERE v1.videoId = '%s'
 		WITH v2, r.weight AS sim
 		ORDER BY sim DESC
 		LIMIT %s
 		RETURN v2.videoId AS Neighbor, sim AS Similarity
 		""" % (videoid, k)
-		res = self.graph.run(query).dump()
+		res = self.graph.run(query)
 		return res
 
-class UpdateWeight(VideosGraph):
-	""" Update the weight of a relation between two videos. """
-	def __init__(self, videoid1, videoid2, weight):
+	def update_weight(self, videoid1, videoid2, weight):
+		""" Update the weight of a relation between two videos. """
+		
 		weight = str(weight)
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
-		WHERE v1.videoId = %s AND v2.videoId = %s
+		WHERE v1.videoId = '%s' AND v2.videoId = '%s'
 		SET r.weight = %s
 		RETURN r
 		""" % (videoid1, videoid2, weight)
-		res = self.graph.run(query).dump()
+		res = self.graph.run(query)
 		return res
