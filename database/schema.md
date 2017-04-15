@@ -45,7 +45,7 @@ usercred
 }
 
 
-*videoInfo*
+*videoinfo*
 
 Provided json data.
 
@@ -55,19 +55,15 @@ Provided json data.
 {
 	
 	user_id: ......,
-	
-	{
-	
-		tags: [
-	
-		{tag="manchester", count=4},
-	
-		{tag="shaolin", count=7},
-	
-		]
-	
-	}
+		
+	tags: [
 
+			{tag="manchester", count=4},
+
+			{tag="shaolin", count=7},
+
+	]
+	
 }
 
 

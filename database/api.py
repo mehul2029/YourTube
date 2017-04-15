@@ -15,7 +15,7 @@ class UserDB(object):
 
 	def __init__(self):
 		self.engine = create_engine(
-			"mysql+pymysql://root:password@localhost/user?host=localhost?port=3306")
+			"mysql+pymysql://root:killthejoker@localhost/user?host=localhost?port=3306")
 		self.engine.echo = True
 		self.conn = self.engine.connect()
 		self.metadata = MetaData(self.engine)
@@ -116,7 +116,6 @@ class Comments(Video):
 		time = dt.datetime.today()
 		self.collection.update(
 			{ "videoid": videoid },
-			# { $addtoSet: {"comments": { by: username, timestamp: time, comment: comment }}}
 			{ '$push': { "comments": {
 			'$each': { "by": username, "timestamp": time, "comment": comment } } } }
 			)
@@ -132,7 +131,7 @@ class VideoInfo(Video):
 	
 	def __init__(self):
 		super(VideoInfo, self).__init__()
-		self.collection = (self.db).videoinfo
+		self.collection = (self.db).video_info
 
 	def get_video(self, videoid):
 		res = self.collection.find({"videoInfo.id" : videoid})
@@ -158,16 +157,18 @@ class HistoryTags(Video):
 		self.collection = (self.db).historytags
 
 	def upsert_tag(self, username, tag):
+		tag = tag.lower()
 		res = self.collection.update(
 			{"user_id":username, "tags.tag":tag},
 			{ '$inc': {"tags.$.count"} })
 		if res.modified_count == 0:
-			db.students.update(
+			self.collection.update(
 				{ "user_id": username },
 				{'$push': { tags: {
 				'$each': { "tag": tag, "count": 1 } } } }
 				)
 		return 1
+
 	def get_tags(self, uername):
 		res = self.collection.find({"user_id": username})
 		return res['videoInfo']['snippet']['tags']
@@ -187,11 +188,11 @@ class VideosGraph(object):
 		k = str(k)
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
-		WHERE v1.videoId = '%s'
+		WHERE v1.vid = '%s'
 		WITH v2, r.weight AS sim
 		ORDER BY sim DESC
 		LIMIT %s
-		RETURN v2.videoId AS Neighbor, sim AS Similarity
+		RETURN v2.vid AS Neighbor, sim AS Similarity
 		""" % (videoid, k)
 		res = self.graph.run(query)
 		return res
@@ -202,7 +203,7 @@ class VideosGraph(object):
 		weight = str(weight)
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
-		WHERE v1.videoId = '%s' AND v2.videoId = '%s'
+		WHERE v1.vid = '%s' AND v2.vid = '%s'
 		SET r.weight = %s
 		RETURN r
 		""" % (videoid1, videoid2, weight)

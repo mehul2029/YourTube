@@ -85,7 +85,7 @@ class Videorel(object):
 
 		self.graph.run("MATCH (v) DETACH DELETE v");
 		ids = [];
-		data;
+		data = data[0:50];
 		for i in range(0,len(data)):
 			d = data[i];
 			rv = self.graph.run(
@@ -106,7 +106,7 @@ class Videorel(object):
 			for record in rv:
 				x = record;
 			ids.append(x[u'ID(v)']);
-			# print(i);
+			print(i);
 
 
 		for i in range(0,len(data)-1):
@@ -151,6 +151,7 @@ class Videorel(object):
 							WHERE ID(v1) = %s AND ID(v2) = %s
 							CREATE (v1)-[r2:WEIGHT {weight: %s}]->(v2);
 							""" % (str(ids[i]), str(ids[j]), str(weightage)) )
+			print(i)
 		print("Relation between videos created.")
 
 class UserDB(object):
@@ -158,7 +159,7 @@ class UserDB(object):
 	def __init__(self):
 		# Requires a 'user' database in which the tables are created.
 		engine = create_engine(
-			"mysql+pymysql://root:password@localhost/user?host=localhost?port=3306")
+			"mysql+pymysql://root:killthejoker@localhost/user?host=localhost?port=3306")
 		engine.echo = True
 		conn = engine.connect()
 		metadata = MetaData(engine)
