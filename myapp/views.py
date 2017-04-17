@@ -14,3 +14,6 @@ def test_func(request):
 		s += d['videoInfo']['snippet']['title']
 		s += '$$'
 	return HttpResponse("%s." % s)
+
+def bootstrap(request):
+	return render(request, 'myapp/bootstrap.html')	
