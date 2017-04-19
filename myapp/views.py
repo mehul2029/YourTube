@@ -196,7 +196,8 @@ def history(request):
 	for videoid in vid_list:
 		doc = v.get_video(videoid);
 		videos.append(helper_get_content(doc))
-	return render(request, 'myapp/history.html', {'videos' : videos})
+	count = len(videos)
+	return render(request, 'myapp/history.html', {'count':count, 'videos' : videos})
 
 def liked_videos(request, videoid):
 	# Return the list of liked videos of the user.
