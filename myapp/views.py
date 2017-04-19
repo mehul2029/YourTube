@@ -80,15 +80,15 @@ def logout_view(request):
 	logout(request)
 	return redirect('/login/')
 
-def db_on_search_click(request):
+def db_on_search_click(videoid, username):
 	# Update historytags
-	tag_list = VideoInfo().get_tags(request.videoid)
+	tag_list = VideoInfo().get_tags(videoid)
 	obj = HistoryTags()
 	for tag in tag_list:
-		obj.upsert_tag(request.username, tag, count=1)
+		obj.upsert_tag(username, tag, count=1)
 
 	# Update userinfo table
-	UserInfoDB().upsert(request.username, request.videoid, likes=0,dislikes=0)
+	UserInfoDB().upsert(username, videoid, likes=0,dislikes=0)
 
 def db_on_recommendation_click(request):
 	# Will increase the weight between the two videos. That is, the two videos watched
@@ -96,13 +96,13 @@ def db_on_recommendation_click(request):
 	g = VideosGraph()
 	g.update_weight(vid1, vid2, weight=1.2)
 
-def view(request):
-	db_on_search_click(request)
-	videos = recommendation(request.videoid, request.username)
+def view(request, videoId):
+	db_on_search_click(videoId, request.username)
+	videos = recommendation(videoId, request.username)
 	v = VideoInfo()
-	currentvid = v.get_video(request.videoid)
+	currentvid = v.get_video(videoId)
 	v = Comments()
-	comment_list = v.get_comments(request.videoid)
+	comment_list = v.get_comments(videoId)
 	u = UserInfoDB()
 	like = u.is_like()
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
