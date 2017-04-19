@@ -166,6 +166,12 @@ def history(request):
 	videos = [row['videoid'] for row in result]
 	return videos
 
-def liked_videos(request):
+def liked_videos(request, videoid):
 	# Return the list of liked videos of the user.
-	pass
+	seen = history(request)
+	obj = UserInfoDB()
+	result = list()
+	for vid in seen:
+		if obj.is_like(request.username, videoid):
+			result.append(videoid)
+	return result
