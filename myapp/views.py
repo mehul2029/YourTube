@@ -42,23 +42,7 @@ def search(request):
 			videos = list()
 			
 			for doc in result:
-				video = {}
-				video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['default']['url']
-				video['title'] = doc['videoInfo']['snippet']['title']
-				video['view'] = doc['videoInfo']['statistics']['viewCount']
-				video['id'] = doc['videoInfo']['id']
-
-				desc = doc['videoInfo']['snippet']['description'].split(' ')
-				desc = desc[0:25]
-				temp = ''
-				for i in desc:
-					temp = temp + i + ' '
-				desc = temp[0:120]
-				if (len(temp) > len(desc)):
-					desc = desc + ' ...'
-
-				video['desc'] = desc
-				videos.append(video)			
+				videos.append(helper_get_content(doc))
 			count = len(videos)
 
 			return render(request, 'myapp/result.html', {	'q' : q,
@@ -66,6 +50,7 @@ def search(request):
 															'videos' : videos,
 															'suggestion' : text})
 
+	# return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 	return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def bootstrap(request):
@@ -208,7 +193,7 @@ def suggest(query):
 	# Will return the original query or the suggestion query accordingly.
 	listify = [x for x in query.split(' ')]
 	reco = [correction(x) for x in listify]
-	common_words = len(set(listify).intersection(set(reco)))
+	common_words = set(listify).intersection(set(reco))
 	if len(common_words)!=len(listify):
 		# Aw, snap. You can't type it seems.
 		new_query = " ".join(reco)
@@ -227,32 +212,21 @@ def recommendation(vid, username):
 	for i in range(0, len(refined_records)):
 		videoid = refined_records['Neighbor'][i]
 		doc = v.get_video(videoid)
-		
-		video = {}
-		video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['default']['url']
-		video['title'] = doc['videoInfo']['snippet']['title']
-		video['view'] = doc['videoInfo']['statistics']['viewCount']
-		video['id'] = doc['videoInfo']['id']
-		
-		desc = doc['videoInfo']['snippet']['description'].split(' ')
-		desc = desc[0:10]
-		temp = ''
-		for i in desc:
-			temp = temp + i + ' '
-		desc = temp[0:50]
-		if (len(temp) > len(desc)):
-			desc = desc + ' ...'
-
-		video['desc'] = desc
-		videos.append(video)
-
+		videos.append(helper_get_content(doc))
 	return videos
 
 def history(request):
 	# Return the list of videos this user has seen.
 	# If returns -1 then user hasn't yet seen any videos.
 	result = UserInfoDB().get_user_info(request.username)
-	videos = [row['videoid'] for row in result]
+	vid_list = [row['videoid'] for row in result]
+
+	videos = list()
+	v = VideoInfo()
+
+	for videoid in vid_list:
+		doc = v.get_video(videoid);
+		videos.append(helper_get_content(doc))
 	return videos
 
 def liked_videos(request, videoid):
@@ -264,3 +238,23 @@ def liked_videos(request, videoid):
 		if obj.is_like(request.username, videoid):
 			result.append(videoid)
 	return result
+
+
+def helper_get_content(doc):
+	video = {}
+	video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['default']['url']
+	video['title'] = doc['videoInfo']['snippet']['title']
+	video['view'] = doc['videoInfo']['statistics']['viewCount']
+	video['id'] = doc['videoInfo']['id']
+
+	desc = doc['videoInfo']['snippet']['description'].split(' ')
+	desc = desc[0:25]
+	temp = ''
+	for i in desc:
+		temp = temp + i + ' '
+	desc = temp[0:120]
+	if (len(temp) > len(desc)):
+		desc = desc + ' ...'
+
+	video['desc'] = desc
+	return video
