@@ -146,7 +146,7 @@ class VideoInfo(Video):
 
 	def get_tags(self, videoid):
 		res = self.collection.find({"videoInfo.id" : videoid})
-		return res
+		return res['videoInfo']['snippet']['tags']
 
 
 class HistoryTags(Video):
@@ -203,13 +203,21 @@ class VideosGraph(object):
 
 	def update_weight(self, videoid1, videoid2, weight):
 		""" Update the weight of a relation between two videos. """
-		
-		weight = str(weight)
+		# Get old weight. And add the increment to it.
+		query = """
+		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		WHERE v1.vid = '%s' AND v2.vid = '%s'
+		RETURN r.weight
+		""" % (videoid1, videoid2, weight)
+		res = self.graph.run(query)
+		original_weight = res.data()
+		new_weight = original_weight + weight
+		new_weight = str(new_weight)
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
 		WHERE v1.vid = '%s' AND v2.vid = '%s'
 		SET r.weight = %s
 		RETURN r
-		""" % (videoid1, videoid2, weight)
+		""" % (videoid1, videoid2, new_weight)
 		res = self.graph.run(query)
 		return res

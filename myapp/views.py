@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from spellcheck import *
 
 from database.api import *
 from engine import Recommendations
@@ -79,9 +80,24 @@ def logout_view(request):
 	logout(request)
 	return redirect('/login/')
 
-def on_search_click(request):
-	# Will update userinfo table, historytags.
-	a = 0
+def db_on_search_click(request):
+	# Update historytags
+	tag_list = VideoInfo().get_tags(request.videoid)
+	obj = HistoryTags()
+	for tag in tag_list:
+		obj.upsert_tag(request.username, tag, count=1)
 
-def view(request, videoId):
-	a=0
+	# Update userinfo table
+	UserInfoDB().upsert(request.username, request.videoid, likes=0,dislikes=0)
+
+def db_on_recommendation_click(request):
+	# Will increase the weight between the two videos. That is, the two videos watched
+	# sequentially.
+	g = VideosGraph()
+	g.update_weight(vid1, vid2, weight=1.2)
+
+def on_video_click(request):
+	pass
+
+def suggest(query):
+	pass
