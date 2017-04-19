@@ -21,9 +21,6 @@ def bootstrap(request):
 	return render(request, 'myapp/bootstrap.html')	
 
 def search(request):
-<<<<<<< HEAD
-	return render(request, 'myapp/search.html')	
-=======
 	if q in request.GET:
 		if len(request.GET['q']):
 			v = VideoInfo()
@@ -83,4 +80,3 @@ def logout_view(request):
 
 def on_search_click(request):
 	# Will update userinfo table, historytags.
->>>>>>> 4ab62f24a639c5d0e7a9afa16c6471d47e88cde5
