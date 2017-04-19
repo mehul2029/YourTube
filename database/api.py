@@ -15,7 +15,7 @@ class UserDB(object):
 
 	def __init__(self):
 		self.engine = create_engine(
-			"mysql+pymysql://root:killthejoker@localhost/user?host=localhost?port=3306")
+			"mysql+pymysql://root:root@localhost/user?host=localhost?port=3306")
 		self.engine.echo = True
 		self.conn = self.engine.connect()
 		self.metadata = MetaData(self.engine)
@@ -65,7 +65,7 @@ class UserInfoDB(UserDB):
 	def __init__(self):
 		super(UserInfoDB, self).__init__()
 		self.userinfo = Table('userinfo', self.metadata, autoload=True)
-		self.userinfo_mapper = mapper(UserInfo, self.userinfo)
+		# self.userinfo_mapper = mapper(UserInfo, self.userinfo)
 		Session = sessionmaker(bind=self.engine)
 		self.session = Session()
 
@@ -90,15 +90,16 @@ class UserInfoDB(UserDB):
 		return 1
 
 	def get_user_info(self, username):
-		query = self.userinfo.select([videoid]).where(userinfo.c.user_id==username)
+		# query = self.userinfo.select([self.userinfo.c.videoid]).where(self.userinfo.c.user_id==username)
+		query = self.userinfo.select(self.userinfo.c.user_id==username)
 		query = query.execute()
 		if query.rowcount == 0:
 			return -1
-		return query
+		return query['videoid']
 
 	def is_like(self, username, videoid):
-		query = self.userinfo.select([likes, dislikes]).where(
-			and_(userinfo.c.user_id==username, userinfo.c.videoid==videoid))
+		query = self.userinfo.select([self.userinfo.c.likes, self.userinfo.c.dislikes]).where(
+			and_(self.userinfo.c.user_id==username, self.userinfo.c.videoid==videoid))
 		query = query.execute()
 		if query.rowcount == 0:
 			return 0

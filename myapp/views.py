@@ -145,8 +145,8 @@ def db_on_recommendation_click(request):
 	g.update_weight(vid1, vid2, weight=1.2)
 
 def view(request, videoId):
-	db_on_search_click(videoId, request.username)
-	videos = recommendation(videoId, request.username)
+	db_on_search_click(videoId, request.user.username)
+	videos = recommendation(videoId, request.user.username)
 	v = VideoInfo()
 	currentvid = v.get_video(videoId)
 	v = Comments()
@@ -187,10 +187,11 @@ def recommendation(vid, username):
 def history(request):
 	# Return the list of videos this user has seen.
 	# If returns -1 then user hasn't yet seen any videos.
-	result = UserInfoDB().get_user_info(request.username)
-	vid_list = [row['videoid'] for row in result]
-
 	videos = list()
+	result = UserInfoDB().get_user_info(request.user.username)
+	if result == -1:
+		return render(request, 'myapp/history.html', {'count':0, 'videos' : videos})	
+	vid_list = [row['videoid'] for row in result]
 	v = VideoInfo()
 
 	for videoid in vid_list:
@@ -205,7 +206,7 @@ def liked_videos(request, videoid):
 	obj = UserInfoDB()
 	result = list()
 	for vid in seen:
-		if obj.is_like(request.username, videoid):
+		if obj.is_like(request.user.username, videoid):
 			result.append(videoid)
 	return result
 
