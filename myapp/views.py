@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
-from database.api import *
 from django.contrib.auth import authenticate, login, logout
+
+from database.api import *
+from engine import Recommendations
+import pandas as pd
 
 
 def index(request):
