@@ -49,9 +49,10 @@ def search(request):
 															'count' : count,
 															'videos' : videos,
 															'suggestion' : text})
-
-	# return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-	return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+	if request.META.get('HTTP_REFERER'):
+		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+	else:
+		return redirect('/home/')
 
 def bootstrap(request):
 	return render(request, 'myapp/bootstrap.html')
@@ -71,7 +72,7 @@ def signup(request):
 			if user is None:
 				user = User.objects.create_user(username=username, email=username, password=password, first_name=first_name, last_name=last_name)
 				login(request, user)
-				return render('home')
+				return render(request, 'myapp/home.html')
 			else:
 				error = 'User already exists'
 				return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
@@ -91,52 +92,13 @@ def login_view(request):
 			if user is not None:
 				# Redirect to a success page.
 				login(request, user)
-				return render('home')
+				return render(request, 'myapp/home.html')
 			else:
 				error = 'Invalid login'
 				return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
 		else:
 			error = 'Something went wrong! Please try again.'
 			return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
-
-				
-def search(request):
-	if request.method == "POST":
-		if 'q' in request.POST:
-			if len(request.POST['q']):
-				v = VideoInfo()
-				result = v.search_text(request.POST['q'])
-				q = request.POST['q']
-
-				videos = list()
-				
-				for doc in result:
-					video = {}
-					video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['medium']['url']
-					video['title'] = doc['videoInfo']['snippet']['title']
-					video['view'] = doc['videoInfo']['statistics']['viewCount']
-					video['id'] = doc['videoInfo']['id']
-
-					desc = doc['videoInfo']['snippet']['description'].split(' ')
-					desc = desc[0:25]
-					temp = ''
-					for i in desc:
-						temp = temp + i + ' '
-					desc = temp[0:120]
-					if (len(temp) > len(desc)):
-						desc = desc + ' ...'
-
-					video['desc'] = desc
-					videos.append(video)			
-				count = len(videos)
-
-				return render(request, 'myapp/result.html', {	'q' : q,
-																'count' : count,
-																'videos' : videos})
-	if request.META.get('HTTP_REFERER'):
-		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-	else:
-		return redirect('/home/')
 
 # def login_view(request):
 # 	username = request.POST['username']
@@ -227,7 +189,7 @@ def history(request):
 	for videoid in vid_list:
 		doc = v.get_video(videoid);
 		videos.append(helper_get_content(doc))
-	return videos
+	return render(request, 'myapp/history.html', {'videos' : videos})
 
 def liked_videos(request, videoid):
 	# Return the list of liked videos of the user.

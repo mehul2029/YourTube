@@ -102,8 +102,8 @@ class UserInfoDB(UserDB):
 		query = query.execute()
 		if query.rowcount == 0:
 			return 0
-		like = q['likes'] for q in query
-		dislike = q['dislikes'] for q in query
+		like = q['likes']
+		dislike = q['dislikes']
 		if like==1:
 			return 1
 		elif dislike == 1:
