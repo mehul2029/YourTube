@@ -26,11 +26,15 @@ def home(request):
 
 def search(request):
 	if 'q' in request.POST:
-		if len(request.POST['q']):
-			v = VideoInfo()
-			result = v.search_text(request.POST['q'])
+		if len(request.POST['q'])>0:
+			# Check if suggestion is needed to be given
 			q = request.POST['q']
-
+			suggestion = suggest(q)
+			text = ""
+			if (suggestion != q):
+				text = suggestion
+			v = VideoInfo()
+			result = v.search_text(q)
 			videos = list()
 			
 			for doc in result:
@@ -55,7 +59,8 @@ def search(request):
 
 			return render(request, 'myapp/result.html', {	'q' : q,
 															'count' : count,
-															'videos' : videos})
+															'videos' : videos,
+															'suggestion' : text})
 
 	return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
