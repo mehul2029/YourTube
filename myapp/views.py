@@ -17,3 +17,6 @@ def test_func(request):
 
 def bootstrap(request):
 	return render(request, 'myapp/bootstrap.html')	
+
+def search(request):
+	return render(request, 'myapp/search.html')	

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+{% include 'myapp/static_files.html' %}
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>YourTube</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+  <header class="main-header">
+    <!-- Logo -->
+    <a href="{% url 'index' %}" class="logo">
+      <span class="logo-mini"><b>Y</b>T</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><b>Your</b>Tube</span>
+    </a>
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+      <!-- Sidebar toggle button-->
+      <div class="navbar-custom-menu">
+        <div class="row">
+          <div class="col-md-1">
+            <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+              <span class="sr-only">Toggle navigation</span>
+            </a>
+          </div>
+          <div class="col-md-8 centre" style="padding: 0;">
+            <form action="#" method="get">
+              <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search...">
+                    <span class="input-group-btn">
+                      <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                      </button>
+                    </span>
+              </div>
+            </form>
+          </div>
+          <div class="col-md-3 right">
+              <ul class="nav navbar-nav">
+                <li class="dropdown user user-menu">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <span class="hidden-xs dropdown-toggle">Alexander Pierce</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#" class="btn btn-danger btn-flat"><i class="fa fa-gears"> Sign Out</i></a>
+                </li>
+              </ul>
+          </div>
+        </div>  
+      </div>      
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="header">MAIN NAVIGATION</li>
+        <li><a href="#"><i class="fa fa-circle-o text-red"></i> <span>Profile</span></a></li>
+        <li><a href="#"><i class="fa fa-circle-o text-green"></i> <span>History</span></a></li>
+      </ul>
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper">
+    <section class="content-header">
+      {% block content-header %} {% endblock %}
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+    {% block content %} {% endblock %}
+    </section>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+      <b>Version</b> 1.0.0
+    </div>
+    <strong>Copyright &copy; 2016-2017 Our Team Name.</strong> All rights
+    reserved.
+  </footer>
+</div>
+<!-- ./wrapper -->
+
+
+<!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
+<script>
+  $.widget.bridge('uibutton', $.ui.button);
+</script>
+
+</body>
+</html>
