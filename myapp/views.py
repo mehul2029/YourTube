@@ -103,10 +103,10 @@ def recommendation(vid, username):
 		
 		thumbnail_list.append(doc['videoInfo']['snippet']['thumbnails']['medium']['url'])
 		title_list.append(doc['videoInfo']['snippet']['title'])
-		views_list.append(doc['videoInfo']['snippet']['title']['statistics'])
+		views_list.append(doc['videoInfo']['statistics']['viewCount'])
 		videoid_list.append(doc['videoInfo']['id'])
 
-		desc = doc['videoInfo']['snippet']['title'].split(' ')
+		desc = doc['videoInfo']['snippet']['description'].split(' ')
 		desc = desc[0:10]
 		temp = ''
 		for i in desc:
