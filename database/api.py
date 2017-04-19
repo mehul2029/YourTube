@@ -156,7 +156,7 @@ class HistoryTags(Video):
 		super(HistoryTags, self).__init__()
 		self.collection = (self.db).historytags
 
-	def upsert_tag(self, username, tag):
+	def upsert_tag(self, username, tag, count=1):
 		tag = tag.lower()
 		res = self.collection.update(
 			{"user_id":username, "tags.tag":tag},
@@ -167,6 +167,10 @@ class HistoryTags(Video):
 				{'$push': { tags: {
 				'$each': { "tag": tag, "count": 1 } } } }
 				)
+		for i in range(0, count-1):
+			self.collection.update(
+			{"user_id":username, "tags.tag":tag},
+			{ '$inc': {"tags.$.count"} })
 		return 1
 
 	def get_tags(self, uername):
