@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
-from database.api import *
 from django.contrib.auth import authenticate, login, logout
+
+from database.api import *
+from engine import Recommendations
+import pandas as pd
 
 
 def index(request):
@@ -80,3 +83,38 @@ def logout_view(request):
 
 def on_search_click(request):
 	# Will update userinfo table, historytags.
+
+def recommendation(vid, username):
+	# Give recommendation based on user and current video
+	obj = Recommendations()
+	v = VideoInfo()
+	records = obj.nearest_neighbours(vid, k=7)
+	refined_records = obj.userhistory(username,records)
+
+	thumbnail_list = list()
+	title_list = list()
+	desc_list = list()
+	views_list = list()
+	videoid_list = list()
+
+	for i in range(0, len(refined_records)):
+		videoid = refined_records['Neighbor'][i]
+		doc = v.get_video(videoid)
+		
+		thumbnail_list.append(doc['videoInfo']['snippet']['thumbnails']['medium']['url'])
+		title_list.append(doc['videoInfo']['snippet']['title'])
+		views_list.append(doc['videoInfo']['snippet']['title']['statistics'])
+		videoid_list.append(doc['videoInfo']['id'])
+
+		desc = doc['videoInfo']['snippet']['title'].split(' ')
+		desc = desc[0:10]
+		temp = ''
+		for i in desc:
+			temp = temp + i + ' '
+		desc = temp[0:50]
+		if (len(temp) > len(desc)):
+			desc = desc + ' ...'
+
+		desc_list.append(desc)
+
+	return (thumbnail_list, title_list, desc_list, views_list, videoid_list)
