@@ -203,6 +203,22 @@ class VideosGraph(object):
 
 	def update_weight(self, videoid1, videoid2, weight):
 		""" Update the weight of a relation between two videos. """
+		# First if no edge exists, make a new edge.
+		query = """
+		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		WHERE v1.vid = '%s' AND v2.vid = '%s'
+		RETURN r
+		""" % (videoid1, videoid2, weight)
+		res = self.graph.run(query)
+		if query.rowcount == 0:
+			# need to make this edge
+			query = """
+			MATCH (v1:video), (v2:video)
+			WHERE v1.vid = %s AND v2.vid = %s
+			CREATE (v1)-[r:WEIGHT {weight: %s}]->(v2);
+			""" % (str(videoid1), str(videoid2), str(weight))
+			return
+		# Else if edge already exists, then update the edge weight.
 		# Get old weight. And add the increment to it.
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
