@@ -107,7 +107,7 @@ def view(request, videoId):
 	like = u.is_like()
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
 												'comment_list' : comment_list,
-												'videos' : videos
+												'videos' : videos,
 												'like' : like})
 
 def suggest(query):
