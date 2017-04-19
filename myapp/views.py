@@ -100,4 +100,12 @@ def on_video_click(request):
 	pass
 
 def suggest(query):
-	pass
+	# Will return the original query or the suggestion query accordingly.
+	listify = [x for x in query.split(' ')]
+	reco = [correction(x) for x in listify]
+	common_words = len(set(listify).intersection(set(reco)))
+	if len(common_words)!=len(listify):
+		# Aw, snap. You can't type it seems.
+		new_query = " ".join(reco)
+		return new_query
+	return query
