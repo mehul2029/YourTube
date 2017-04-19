@@ -90,7 +90,7 @@ class UserInfoDB(UserDB):
 		return 1
 
 	def get_user_info(self, username):
-		query = self.userinfo.select(userinfo.c.user_id==username)
+		query = self.userinfo.select([videoid]).where(userinfo.c.user_id==username)
 		query = query.execute()
 		if query.rowcount == 0:
 			return -1

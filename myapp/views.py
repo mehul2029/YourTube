@@ -2,8 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from engine.spellcheck import *
 
+from engine.spellcheck import *
 from database.api import *
 from engine.recommend import Recommendations
 import pandas as pd
@@ -157,4 +157,11 @@ def recommendation(vid, username):
 		video['desc'] = desc
 		videos.append(video)
 
+	return videos
+
+def history(request):
+	# Return the list of videos this user has seen.
+	# If returns -1 then user hasn't yet seen any videos.
+	videos = UserInfoDB().get_user_info(request.username)
+	videos = videos['videoid']
 	return videos
