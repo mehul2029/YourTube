@@ -5,6 +5,9 @@ from django.contrib.auth import login, logout
 from django.contrib.auth import authenticate as authen
 from django.contrib.auth.models import User
 from django import forms
+from django.contrib.auth.decorators import login_required
+import logging
+
 #from django.forms import LoginForm
 
 from engine.spellcheck import *
@@ -12,6 +15,8 @@ from database.api import *
 from engine.recommend import Recommendations
 import pandas as pd
 
+# Get an instance of a logger
+logger = logging.getLogger('')
 
 def index(request):
 	return render(request, 'myapp/index.html')	
@@ -25,6 +30,7 @@ def test_func(request):
 		s += '$$'
 	return HttpResponse("%s." % s)
 
+@login_required
 def home(request):
 	return render(request, 'myapp/home.html')
 
@@ -88,7 +94,7 @@ def login_view(request):
 		if True:	#form.is_valid(): # All validation rules pass
 			username = request.POST['username']
 			password = request.POST['password']
-			user = authen(user=username, password=password)
+			user = authen(username=username, password=password)
 			if user is not None:
 				# Redirect to a success page.
 				login(request, user)
@@ -100,9 +106,27 @@ def login_view(request):
 			error = 'Something went wrong! Please try again.'
 			return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
 
+# def login_view(request):
+# 	username = request.POST['username']
+# 	password = request.POST['password']
+# 	user = authen(user=username, password=password)
+# 	if user is not None:
+# 		if user.is_active:
+# 			login(request, user)
+# 			return render(request, 'home.html', {'firstname':user.first_name,
+# 				'lastname':user.last_name, 'username':user.username})
+# 		else:
+# 			error = "Your account has been disabled. Use a different account. "
+# 			return render (request, 'login.html', {'error':error})
+# 	else:
+# 		error = "Incorrect username or password provided."
+# 		return render (request, 'login.html', {'error':error})
+
+# Isn't really used. Using django.contrib.auth.views.logout instead.
 def logout_view(request):
+	logger.info('in logout')
 	logout(request)
-	return redirect('/login/')
+	return redirect('login')
 
 def db_on_search_click(videoid, username):
 	# Update historytags

@@ -130,3 +130,26 @@ STATICFILES_DIRS = [
 STATIC_URL = '/static/'
 
 LOGIN_URL = '/login/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR + '/debug.log'
+        },
+    },
+    'root': {
+        'handlers': ['file'],
+        'level': 'DEBUG'
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': False
+        },
+    }
+}
