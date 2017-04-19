@@ -162,6 +162,10 @@ def recommendation(vid, username):
 def history(request):
 	# Return the list of videos this user has seen.
 	# If returns -1 then user hasn't yet seen any videos.
-	videos = UserInfoDB().get_user_info(request.username)
-	videos = videos['videoid']
+	result = UserInfoDB().get_user_info(request.username)
+	videos = [row['videoid'] for row in result]
 	return videos
+
+def liked_videos(request):
+	# Return the list of liked videos of the user.
+	pass
