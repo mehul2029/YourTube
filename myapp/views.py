@@ -17,43 +17,41 @@ def test_func(request):
 		s += '$$'
 	return HttpResponse("%s." % s)
 
-def bootstrap(request):
-	return render(request, 'myapp/bootstrap.html')	
+def home(request):
+	return render(request, 'myapp/home.html')	
 
 def search(request):
-	if q in request.GET:
-		if len(request.GET['q']):
+	if 'q' in request.POST:
+		if len(request.POST['q']):
 			v = VideoInfo()
-			result = v.search_text(request.GET['q'])
-			
-			thumbnail_list = list()
-			title_list = list()
-			desc_list = list()
-			views_list = list()
-			videoid_list = list()
+			result = v.search_text(request.POST['q'])
+			q = request.POST['q']
+
+			videos = list()
 			
 			for doc in result:
-				thumbnail_list.append(doc['videoInfo']['snippet']['thumbnails']['medium']['url'])
-				title_list.append(doc['videoInfo']['snippet']['title'])
-				views_list.append(doc['videoInfo']['snippet']['title']['statistics'])
-				videoid_list.append(doc['videoInfo']['id'])
+				video = {}
+				video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['default']['url']
+				video['title'] = doc['videoInfo']['snippet']['title']
+				video['view'] = doc['videoInfo']['statistics']['viewCount']
+				video['id'] = doc['videoInfo']['id']
 
-				desc = doc['videoInfo']['snippet']['title'].split(' ')
-				desc = desc[0:10]
+				desc = doc['videoInfo']['snippet']['description'].split(' ')
+				desc = desc[0:25]
 				temp = ''
 				for i in desc:
 					temp = temp + i + ' '
-				desc = temp[0:50]
+				desc = temp[0:120]
 				if (len(temp) > len(desc)):
 					desc = desc + ' ...'
 
-				desc_list.append(desc)
+				video['desc'] = desc
+				videos.append(video)			
+			count = len(videos)
 
-			return render(request, 'result.html', {'thumbnail_list' : thumbnail_list, 
-													'title_list' : title_list,
-													'desc_list' : desc_list,
-													'views_list' : views_list,
-													'videoid_list' : videoid_list})
+			return render(request, 'myapp/result.html', {	'q' : q,
+															'count' : count,
+															'videos' : videos})
 
 	return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -80,3 +78,7 @@ def logout_view(request):
 
 def on_search_click(request):
 	# Will update userinfo table, historytags.
+	a = 0
+
+def view(request, videoId):
+	a=0

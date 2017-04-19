@@ -30,8 +30,9 @@
               <span class="sr-only">Toggle navigation</span>
             </a>
           </div>
-          <div class="col-md-8 centre" style="padding: 0;">
-            <form action="#" method="get">
+          <div class="col-md-8" style="padding: 0; padding-top:9px">
+            <form action="{% url 'search' %}" method="post">
+              {% csrf_token %}
               <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="Search...">
                     <span class="input-group-btn">
