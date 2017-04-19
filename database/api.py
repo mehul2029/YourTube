@@ -106,7 +106,7 @@ class UserInfoDB(UserDB):
 		dislike = query['dislikes']
 		if like==1:
 			return 1
-		else if dislike == 1:
+		elif dislike == 1:
 			return -1
 		return 0	
 
