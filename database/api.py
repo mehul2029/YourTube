@@ -160,7 +160,7 @@ class VideoInfo(Video):
 		return res
 
 	def get_tags(self, videoid):
-		res = self.collection.find({"videoInfo.id" : videoid})
+		res = self.collection.find_one({"videoInfo.id" : videoid})
 		return res['videoInfo']['snippet']['tags']
 
 
@@ -188,8 +188,8 @@ class HistoryTags(Video):
 			{ '$inc': {"tags.$.count"} })
 		return 1
 
-	def get_tags(self, uername):
-		res = self.collection.find({"user_id": username})
+	def get_tags(self, username):
+		res = self.collection.find_one({"user_id": username})
 		return res['videoInfo']['snippet']['tags']
 
 # NEO4J

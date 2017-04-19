@@ -145,7 +145,7 @@ def db_on_recommendation_click(request):
 	g.update_weight(vid1, vid2, weight=1.2)
 
 def view(request, videoId):
-	db_on_search_click(videoId, request.user.username)
+	# db_on_search_click(videoId, request.user.username)
 	videos = recommendation(videoId, request.user.username)
 	v = VideoInfo()
 	currentvid = v.get_video(videoId)
@@ -213,7 +213,7 @@ def liked_videos(request, videoid):
 
 def helper_get_content(doc):
 	video = {}
-	video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['default']['url']
+	video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['medium']['url']
 	video['title'] = doc['videoInfo']['snippet']['title']
 	video['view'] = doc['videoInfo']['statistics']['viewCount']
 	video['id'] = doc['videoInfo']['id']
