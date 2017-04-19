@@ -89,12 +89,26 @@ class UserInfoDB(UserDB):
 				viewCount=0, likes=likes, dislikes=dislikes)
 		return 1
 
-	def get_info(self, username):
+	def get_user_info(self, username):
 		query = self.userinfo.select(userinfo.c.user_id==username)
 		query = query.execute()
 		if query.rowcount == 0:
 			return -1
 		return query
+
+	def is_like(self, username, videoid):
+		query = self.userinfo.select([likes, dislikes]).where(
+			and_(userinfo.c.user_id==username, userinfo.c.videoid==videoid))
+		query = query.execute()
+		if query.rowcount == 0:
+			return 0
+		like = query['likes']
+		dislike = query['dislikes']
+		if like==1:
+			return 1
+		else if dislike == 1:
+			return -1
+		return 0	
 
 # MONGODB
 class Video(object):
@@ -115,15 +129,15 @@ class Comments(Video):
 	def add_comment(self, username, videoid, comment):
 		time = dt.datetime.today()
 		self.collection.update(
-			{ "videoid": videoid },
+			{ "videoid": str(videoid) },
 			{ '$push': { "comments": {
-			'$each': { "by": username, "timestamp": time, "comment": comment } } } }
+			'$each': { "by": str(username), "timestamp": str(time), "comment": str(comment) } } } }
 			)
 		return 1
 
 	def get_comments(self, videoid):
 		res = self.collection.find( { "videoid": videoid } )
-		return res
+		return res['comments']
 
 
 class VideoInfo(Video):

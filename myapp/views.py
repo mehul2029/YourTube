@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from spellcheck import *
 
 from database.api import *
-from engine import Recommendations
+from engine.recommend import Recommendations
 import pandas as pd
 
 
@@ -96,8 +96,19 @@ def db_on_recommendation_click(request):
 	g = VideosGraph()
 	g.update_weight(vid1, vid2, weight=1.2)
 
-def on_video_click(request):
-	pass
+def view(request):
+	db_on_search_click(request)
+	videos = recommendation(request.videoid, request.username)
+	v = VideoInfo()
+	currentvid = v.get_video(request.videoid)
+	v = Comments()
+	comment_list = v.get_comments(request.videoid)
+	u = UserInfoDB()
+	like = u.is_like()
+	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
+												'comment_list' : comment_list,
+												'videos' : videos
+												'like' : like})
 
 def suggest(query):
 	# Will return the original query or the suggestion query accordingly.
@@ -109,3 +120,36 @@ def suggest(query):
 		new_query = " ".join(reco)
 		return new_query
 	return query
+
+def recommendation(vid, username):
+	# Give recommendation based on user and current video
+	obj = Recommendations()
+	v = VideoInfo()
+	records = obj.nearest_neighbours(vid, k=7)
+	refined_records = obj.userhistory(username,records)
+
+	videos = list()
+
+	for i in range(0, len(refined_records)):
+		videoid = refined_records['Neighbor'][i]
+		doc = v.get_video(videoid)
+		
+		video = {}
+		video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['default']['url']
+		video['title'] = doc['videoInfo']['snippet']['title']
+		video['view'] = doc['videoInfo']['statistics']['viewCount']
+		video['id'] = doc['videoInfo']['id']
+		
+		desc = doc['videoInfo']['snippet']['description'].split(' ')
+		desc = desc[0:10]
+		temp = ''
+		for i in desc:
+			temp = temp + i + ' '
+		desc = temp[0:50]
+		if (len(temp) > len(desc)):
+			desc = desc + ' ...'
+
+		video['desc'] = desc
+		videos.append(video)
+
+	return videos

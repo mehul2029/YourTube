@@ -28,19 +28,15 @@ usercred
 
 {
 	
-	videoid: ......,
+	"videoid": ......,
 	
-	{
+	"comments": [
 	
-		comments: [
+		{"by" : "user1" , "time" : "2017-01-01", "comment" : "sample comment"},
 	
-		{by=user1 , time=2017-01-01, comment-"sample comment"},
+		{"by" : "user2" , "time" : "2017-01-01", "comment" : "sample comment"},
 	
-		{by=user2 , time=2017-01-01, comment-"sample comment"},
-	
-		]
-	
-	}
+	]
 
 }
 
