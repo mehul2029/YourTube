@@ -8,6 +8,8 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 import logging
 import json
+from django.shortcuts import render_to_response
+
 
 #from django.forms import LoginForm
 
@@ -214,10 +216,13 @@ def history(request):
 
 def liked_videos(request):
 	# Return the list of liked videos of the user.
-	seen = history(request)
+	count = 0
+	vids = UserInfoDB().get_user_info(request.user.username)
+	if vids == -1:
+		vids = []
 	obj = UserInfoDB()
 	result = list()
-	for vid in seen:
+	for vid in vids:
 		if obj.is_like(request.user.username, vid):
 			result.append(vid)
 	count = len(result)
@@ -329,6 +334,7 @@ def is_user_present(request):
 	else:
 		return redirect('/home/')
 
+<<<<<<< HEAD
 def like(request):
 	if request.method == "POST" and request.is_ajax():
 		vid = request.POST.get('vid')
@@ -350,3 +356,8 @@ def dislike(request):
 		else:
 			u.upsert(request.user.username, vid, likes=0, dislikes=1)
 			return HttpResponse(json.dumps({'resp': -1 }), content_type="application/json")
+
+def connect_users(request, username):
+	obj = UserGraph()
+	obj.follow_user(request.user.username, username)
+	return redirect('/home/')
