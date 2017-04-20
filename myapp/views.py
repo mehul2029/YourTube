@@ -47,15 +47,20 @@ def search(request):
 			v = VideoInfo()
 			result = v.search_text(q)
 			videos = list()
-			
+			score = list()
+
 			for doc in result:
-				videos.append(helper_get_content(doc))
+				video = helper_get_content(doc)
+				logger.info(doc['score'])
+				video['score'] = str(doc['score'])
+				videos.append(video)
+
 			count = len(videos)
 
 			return render(request, 'myapp/result.html', {	'q' : q,
 															'count' : count,
 															'videos' : videos,
-															'suggestion' : text})
+															'suggestion' : text,})
 	if request.META.get('HTTP_REFERER'):
 		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 	else:

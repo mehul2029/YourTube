@@ -27,7 +27,7 @@ class Videoinfo(object):
 			pass
 
 		for filename in os.listdir(path):
-			with open(path + filename) as data_file: 
+			with open(path + filename) as data_file:
 				data = json.load(data_file)
 				data['videoInfo']['statistics']['likeCount'] = int(data['videoInfo']['statistics']['likeCount'])
 				post_id = db.video_info.insert_one(data).inserted_id
@@ -46,8 +46,8 @@ class Videoinfo(object):
 							],
 							name="search_index",
 							weights={
-							"videoInfo.snippet.title" : 10,
-							"videoInfo.snippet.description" : 4,
+							"videoInfo.snippet.title" : 30,
+							"videoInfo.snippet.description" : 5,
 							"videoInfo.snippet.tags" : 10
 							}
 						)

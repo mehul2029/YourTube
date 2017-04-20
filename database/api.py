@@ -170,7 +170,8 @@ class VideoInfo(Video):
 		""" Search the keywords of query (string) and return a list of video info
 			in decreasing order of weight. """
 
-		res = self.collection.find({"$text" : { "$search": query}})
+		res = self.collection.find({"$text" : { "$search": query}}, { "score": { "$meta": "textScore" }})
+		res.sort([('score', {'$meta': 'textScore'})])
 		return res
 
 	def get_tags(self, videoid):
