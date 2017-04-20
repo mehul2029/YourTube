@@ -150,12 +150,12 @@ def db_on_search_click(videoid, username):
 	# Update userinfo table
 	UserInfoDB().upsert(username, videoid, likes=0,dislikes=0)
 
-def db_on_recommendation_click(request, videoid):
+def db_on_recommendation_click(request, newvideoId, oldvideoId):
 	# Will increase the weight between the two videos. That is, the two videos watched
 	# sequentially.
 	g = VideosGraph()
-	g.update_weight(vid1, vid2, weight=1.2)
-	url = reverse('view', kwargs={'videoId': videoid})
+	g.update_weight(str(newvideoId), str(oldvideoId), weight=1.2)
+	url = reverse('view', kwargs={'videoId': str(newvideoId)})
 	return HttpResponseRedirect(url)
 
 
@@ -167,6 +167,7 @@ def view(request, videoId):
 	v = Comments()
 	# If you get -1 in comment_list, it means there are no comments yet.
 	comment_list = v.get_comments(videoId)
+	comment_list.reverse()
 	comment_count = 0
 	if comment_list != -1:
 		comment_count = len(comment_list)
@@ -339,16 +340,22 @@ def is_user_present(request):
 	count = 0
 	obj = UserGraph()
 	if 'q' in request.POST:
+		if (request.POST['q'] == request.user.username):
+			return render(request, 'myapp/find_user.html', {'error' : -3})
+
 		if len(request.POST['q'])>0:
 			count = obj.find_user(request.POST['q'])
 			follow = 0
 			if count:
 				follow = obj.does_follow_user(request.user.username, request.POST['q'])
+			else:
+				return render(request, 'myapp/find_user.html', {'error' : -2})
+
 			return render(request, 'myapp/found_user.html', {'count' : count,
-															'u' : request.POST['q'],
+															'q' : request.POST['q'],
 															'follow' : follow})
 	if request.META.get('HTTP_REFERER'):
-		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+		return HttpResponsesponseRedirect(request.META.get('HTTP_REFERER'))
 	else:
 		return redirect('/home/')
 

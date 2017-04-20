@@ -10,18 +10,18 @@ if sys.hexversion < 0x30400f0:
     sys.exit(1)
 
 # Set up required databases.
-def setup_db():
-	obj = Videoinfo()
-	obj.init_db()
-	obj = Videorel()
-	obj.init_db()
-	obj = UserDB()
-	print('Databases set up.')
+# def setup_db():
+# 	obj = Videoinfo()
+# 	obj.init_db()
+# 	obj = Videorel()
+# 	obj.init_db()
+# 	obj = UserDB()
+# 	print('Databases set up.')
 # setup_db()
 
-obj = UserDB()
+# obj = UserDB()
 
-version = "0.1"
+# version = "0.1"
 
 # setup(
 # 	name = "YourTube",

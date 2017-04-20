@@ -3,6 +3,9 @@
 {% block content %}
 <form action="{% url 'found_user' %}" method="post">
 {% csrf_token %}
+<br>
+<br>
+<br>
   <div class="input-group">
     <input type="text" name="q" class="form-control" placeholder="Search for user...">
         <span class="input-group-btn">
@@ -11,4 +14,16 @@
         </span>
   </div>
 </form>
+
+{% endblock %}
+{% block content-header %} 
+	{% if error == -2 %}
+		<br><br>
+		<h1 class="centre"><b>No user found. </b></h1>
+		<br>
+	{% elif error == -3%}
+		<br><br>
+		<h1 class="centre"><b>Narcissist Spotted. </b></h1>
+		<br>
+	{% endif %}
 {% endblock %}

@@ -244,9 +244,9 @@ class VideosGraph(object):
 		# First if no edge exists, make a new edge.
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
-		WHERE v1.vid = '%s' AND v2.vid = '%s'
+		WHERE v1.vid = "%s" AND v2.vid = "%s"
 		RETURN r
-		""" % (videoid1, videoid2, weight)
+		""" % (str(videoid1), str(videoid2))
 		res = self.graph.run(query)
 		flag = 0
 		for d in res:
@@ -257,7 +257,7 @@ class VideosGraph(object):
 			MATCH (v1:video), (v2:video)
 			WHERE v1.vid = '%s' AND v2.vid = '%s'
 			CREATE (v1)-[r:WEIGHT {weight: %s}]->(v2);
-			""" % (str(videoid1), str(videoid2), str(weight))
+			""" % (str(videoid1), str(videoid2), weight)
 			self.graph.run(query)
 			return
 		# Else if edge already exists, then update the edge weight.
@@ -266,10 +266,10 @@ class VideosGraph(object):
 		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
 		WHERE v1.vid = '%s' AND v2.vid = '%s'
 		RETURN r.weight
-		""" % (videoid1, videoid2, weight)
+		""" % (videoid1, videoid2)
 		res = self.graph.run(query)
 		original_weight = res.data()
-		new_weight = original_weight + weight
+		new_weight = original_weight[0]['r.weight'] + weight
 		new_weight = str(new_weight)
 		query = """
 		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
@@ -307,8 +307,8 @@ class UserGraph(object):
 			flag = 1
 		if not flag:
 			query = """
-			MATCH (u1:user)-[r:follow]->(u2:user)
-			WHERE u1.uid = %s And u2.uid = %s
+			MATCH (u1:user), (u2:user)
+			WHERE u1.uid = "%s" And u2.uid = "%s"
 			CREATE (u1) -[r:follow]-> (u2)
 			RETURN r
 			""" % (str(uid1), str(uid2))
