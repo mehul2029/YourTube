@@ -307,8 +307,8 @@ class UserGraph(object):
 			flag = 1
 		if not flag:
 			query = """
-			MATCH (u1:user)-[r:follow]->(u2:user)
-			WHERE u1.uid = %s And u2.uid = %s
+			MATCH (u1:user), (u2:user)
+			WHERE u1.uid = "%s" And u2.uid = "%s"
 			CREATE (u1) -[r:follow]-> (u2)
 			RETURN r
 			""" % (str(uid1), str(uid2))
