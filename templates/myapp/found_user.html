@@ -10,6 +10,8 @@
 	{% endif %}
 {% endblock %}
 
+<p style="display: none" id="msg"> Hello </p>
+
 {% block content %} 
 
 	{% ifequal count 1 %}
@@ -22,12 +24,37 @@
 						</div>
 						<div class="col-sm-9">
 							<h3>{{ u }}</h3>
-							<a href={% url 'found_user' username=u %}  class="btn btn-block btn-info">Follow</a>
+							<a class="btn btn-block btn-info" style="padding-top:18px" id="follow">Follow</a>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	{% endif %}
+
+{% endblock %}
+
+{% block script %}
+<script>
+	$("#follow").click(function(){
+		console.log("follow");
+		$.ajax({
+		    url: "{% url 'ajax-follow' %}",  
+		    type: "POST",
+		    data: { 'username' : '{{ u }}',
+		    		csrfmiddlewaretoken: '{{ csrf_token }}' },
+		    success:function(data) {
+		    	if(data.resp == 1){
+		    		console.log('successfully followed')
+		    		$("#msg").show();
+		    	}
+		    },
+		    fail:function(){
+		    	console.log('failure while following')
+		    }
+  		});
+	});
+
+</script>
 
 {% endblock %}

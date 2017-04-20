@@ -326,6 +326,9 @@ def global_recommendation(request):
 				'recommends' : recommends,
 				'follow_recos' : follow_recos,};
 
+def find_user(request):
+	return render('myapp/find_user.html')
+
 def is_user_present(request):
 	count = 0
 	obj = UserGraph()
@@ -361,7 +364,9 @@ def dislike(request):
 			u.upsert(request.user.username, vid, likes=0, dislikes=1)
 			return HttpResponse(json.dumps({'resp': -1 }), content_type="application/json")
 
-def connect_users(request, username):
-	obj = UserGraph()
-	obj.follow_user(request.user.username, username)
-	return redirect('/home/')
+def connect_users(request):
+	if request.method == "POST" and request.is_ajax():
+		u = request.POST.get('username')
+		obj = UserGraph()
+		obj.follow_user(request.user.username, u)
+		return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")
