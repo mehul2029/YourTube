@@ -1,7 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
+from django.contrib.auth import authenticate as authen
+from django.contrib.auth.models import User
+from django import forms
+#from django.forms import LoginForm
 
 from engine.spellcheck import *
 from database.api import *
@@ -22,7 +26,7 @@ def test_func(request):
 	return HttpResponse("%s." % s)
 
 def home(request):
-	return render(request, 'myapp/home.html')	
+	return render(request, 'myapp/home.html')
 
 def search(request):
 	if 'q' in request.POST:
@@ -64,21 +68,106 @@ def search(request):
 
 	return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-def login_view(request):
-	username = request.POST['username']
-	password = request.POST['password']
-	user = authenticate(username=username, password=password)
-	if user is not None:
-		if user.is_active:
-			login(request, user)
-			return render(request, 'home.html', {'firstname':user.first_name,
-				'lastname':user.last_name, 'username':user.username})
+def bootstrap(request):
+	return render(request, 'myapp/bootstrap.html')
+
+def signup(request):
+	if request.method == "GET":
+		return redirect('login')
+
+	if request.method == "POST":
+		#form = LoginForm(request.POST)
+		if True: #form.is_valid():
+			username = request.POST['username']
+			password = request.POST['password']
+			first_name = request.POST['first_name']
+			last_name = request.POST['last_name']
+			user = authen(username=username, password=password)
+			if user is None:
+				user = User.objects.create_user(username=username, email=username, password=password, first_name=first_name, last_name=last_name)
+				login(request, user)
+				return render('home')
+			else:
+				error = 'User already exists'
+				return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
 		else:
-			error = "Your account has been disabled. Use a different account. "
-			return render (request, 'login.html', {'error':error})
+			error = 'Something went wrong! Please try again.'
+			return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+
+def login_view(request):
+	if request.method == "GET":
+		return render(request, 'myapp/login.html')
+	if request.method == "POST":
+		#form = LoginForm(request.POST) # A form bound to the POST data
+		if True:	#form.is_valid(): # All validation rules pass
+			username = request.POST['username']
+			password = request.POST['password']
+			user = authen(user=username, password=password)
+			if user is not None:
+				# Redirect to a success page.
+				login(request, user)
+				return render('home')
+			else:
+				error = 'Invalid login'
+				return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+		else:
+			error = 'Something went wrong! Please try again.'
+			return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+
+				
+def search(request):
+	if request.method == "POST":
+		if 'q' in request.POST:
+			if len(request.POST['q']):
+				v = VideoInfo()
+				result = v.search_text(request.POST['q'])
+				q = request.POST['q']
+
+				videos = list()
+				
+				for doc in result:
+					video = {}
+					video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['medium']['url']
+					video['title'] = doc['videoInfo']['snippet']['title']
+					video['view'] = doc['videoInfo']['statistics']['viewCount']
+					video['id'] = doc['videoInfo']['id']
+
+					desc = doc['videoInfo']['snippet']['description'].split(' ')
+					desc = desc[0:25]
+					temp = ''
+					for i in desc:
+						temp = temp + i + ' '
+					desc = temp[0:120]
+					if (len(temp) > len(desc)):
+						desc = desc + ' ...'
+
+					video['desc'] = desc
+					videos.append(video)			
+				count = len(videos)
+
+				return render(request, 'myapp/result.html', {	'q' : q,
+																'count' : count,
+																'videos' : videos})
+	if request.META.get('HTTP_REFERER'):
+		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 	else:
-		error = "Incorrect username or password provided."
-		return render (request, 'login.html', {'error':error})
+		return redirect('/home/')
+
+# def login_view(request):
+# 	username = request.POST['username']
+# 	password = request.POST['password']
+# 	user = authen(user=username, password=password)
+# 	if user is not None:
+# 		if user.is_active:
+# 			login(request, user)
+# 			return render(request, 'home.html', {'firstname':user.first_name,
+# 				'lastname':user.last_name, 'username':user.username})
+# 		else:
+# 			error = "Your account has been disabled. Use a different account. "
+# 			return render (request, 'login.html', {'error':error})
+# 	else:
+# 		error = "Incorrect username or password provided."
+# 		return render (request, 'login.html', {'error':error})
 
 # Isn't really used. Using django.contrib.auth.views.logout instead.
 def logout_view(request):

@@ -6,10 +6,26 @@
 
 {% block content %} 
 
-<div class="container">
-	<div class="row">
-		Show global recos
-	</div>
-</div>
+	Show global recos -(Comment)
+
+	{% comment %}
+	{% for video in videos %}
+		{% if forloop.counter0|divisibleby:3 %}
+		<div class="row">
+		{% endif %}
+			<div class="col-md-4 col-sm-6">
+				<div class="well well-sm">
+					<a href="{% url 'view' videoId=video.id %}">
+						<img src="{{ video.thumbnail }}">
+						<h4>{{ video.title }}</h4>
+						<p>{{ video.desc }}</p>
+					</a>
+				</div>
+			</div>
+		{% if forloop.counter|divisibleby:3 %}
+		</div> 
+		{% endif %}
+	{% endfor %}
+	{% endcomment %}
 
 {% endblock %}
