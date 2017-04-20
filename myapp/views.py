@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 import logging
 import json
 from django.shortcuts import render_to_response
-
+from pandas import DataFrame
 
 #from django.forms import LoginForm
 
@@ -37,7 +37,9 @@ def test_func(request):
 
 @login_required
 def home(request):
-	return render(request, 'myapp/home.html')
+	videos = global_recommendation(request)
+	logger.info(videos)
+	return render(request, 'myapp/home.html', videos)
 
 def search(request):
 	if 'q' in request.POST:
@@ -256,13 +258,14 @@ def helper_get_content(doc):
 	return video
 
 def global_recommendation(request):
-	liked_vid_list_org, count_of_liked_vid_list = get_users_liked_video(request.user.username)
+	obj = UserInfoDB()
+	liked_vid_list_org, count_of_liked_vid_list = obj.get_users_liked_video(request.user.username)
 	liked_vid_list = liked_vid_list_org[0:10]
 	vid_list = set()
 	for c in liked_vid_list:
 		vid_list.add(c)
 
-	viewed_vid_list = get_user_info(request.user.username)
+	viewed_vid_list = obj.get_user_info(request.user.username)
 	viewed_vid_list = viewed_vid_list[0:5]
 	for c in viewed_vid_list:
 		vid_list.add(c)
@@ -271,7 +274,7 @@ def global_recommendation(request):
 	obj = Recommendations()
 	for v in vid_list:
 		reco = obj.nearest_neighbours(v, 1)
-		recommend_list.add(reco['Neighbor'])
+		recommend_list.add(reco['Neighbor'].ix[0])
 	recommend_list.difference_update(vid_list)
 
 	v = VideoInfo()
@@ -287,7 +290,7 @@ def global_recommendation(request):
 		watch_it_again_list.append(temp)
 	sorted(watch_it_again_list, key=itemgetter(1), reverse=True)
 
-	watch_it_again_list = watch_it_again_list[0:4]
+	watch_it_again_list = watch_it_again_list[0:2]
 
 	watch_again = list()
 	for tup in watch_it_again_list:
@@ -317,9 +320,9 @@ def global_recommendation(request):
 		doc = v.get_video(vid)
 		follow_recos.append(helper_get_content(doc))
 
-	return render(request, 'myapp/home.html', {	'watch_again' : watch_again,
-												'recommends' : recommends,
-												'follow_recos' : follow_recos,})
+	return {	'watch_again' : watch_again,
+				'recommends' : recommends,
+				'follow_recos' : follow_recos,};
 
 def is_user_present(request):
 	count = 0

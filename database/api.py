@@ -110,14 +110,16 @@ class UserInfoDB(UserDB):
 					return 0
 
 	def get_users_liked_video(self, username):
-		record=s.query(self.UserInfoMap).filter_by(user_id=username, likes=1).all()
+		record=self.s.query(self.UserInfoMap).filter_by(user_id=username, likes=1).all()
 		if record is None:
 			return -1
 		else:
 			a = list()
+			b = list()
 			for r in record:
 				a.append(r.videoid)
-			return (a, len(a))
+				b.append(r.viewCount)
+			return (a, b)
 
 
 # MONGODB
