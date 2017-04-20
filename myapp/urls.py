@@ -16,7 +16,7 @@ urlpatterns = [
     url(r'^liked_videos/$', views.liked_videos, name='liked_videos'),
     url(r'^ajax/like/$', views.like, name='ajax-like'),
     url(r'^ajax/dislike/$', views.dislike, name='ajax-dislike'),
-    url(r'^found_user/$', views.follow_user, name='found_user'),
+    url(r'^found_user/$', views.connect_users, name='found_user'),
     url(r'^find_user/$', views.is_user_present, name='find_user'),
 	# url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/successfully_logged_out/'}, name='logout'),
 ]
