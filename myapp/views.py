@@ -94,10 +94,10 @@ def signup(request):
 				return render(request, 'myapp/home.html')
 			else:
 				error = 'User already exists'
-				return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+				return render(request, 'myapp/login.html', { 'error': error })
 		else:
 			error = 'Something went wrong! Please try again.'
-			return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+			return render(request, 'myapp/login.html', { 'error': error })
 
 def login_view(request):
 	if request.method == "GET":
@@ -113,11 +113,11 @@ def login_view(request):
 				login(request, user)
 				return render(request, 'myapp/home.html')
 			else:
-				error = 'Invalid login'
-				return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+				error = 'Invalid credentials'
+				return render(request, 'myapp/login.html', { 'error': error })
 		else:
 			error = 'Something went wrong! Please try again.'
-			return render(request, 'myapp/login.html', { 'error': 'Invalid username' })
+			return render(request, 'myapp/login.html', { 'error': error })
 
 # def login_view(request):
 # 	username = request.POST['username']

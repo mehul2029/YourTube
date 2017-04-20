@@ -4,20 +4,21 @@
 <html >
 <head>
   <meta charset="UTF-8">
-  <title>Sign-Up/Login Form</title>
+  <title>YourTube</title>
   <link href='http://fonts.googleapis.com/css?family=Titillium+Web:400,300,600' rel='stylesheet' type='text/css'>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
-
-  
-      <link rel="stylesheet" href="{% static 'login/css/style.css' %}">
-
-  
+  <link rel="stylesheet" href="{% static 'login/css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'custom.css' %}">
+  <link rel="shortcut icon" href="{% static 'images/logo.ico' %}">
 </head>
 
 <body>
   <div class="form">
       
       <ul class="tab-group">
+        {% if error %}
+        <button class="button button-block"/ style="font-size: medium; background-color: #dd4b39">{{ error }}</button><br>
+        {% endif %}
         <li class="tab active"><a href="#signup">Sign Up</a></li>
         <li class="tab"><a href="#login">Log In</a></li>
       </ul>
@@ -82,9 +83,6 @@
             </label>
             <input type="password"required autocomplete="off" name="password"/>
           </div>
-          
-          <p class="forgot"><a href="#">Forgot Password?</a></p>
-          
           <button class="button button-block"/>Log In</button>
           
           </form>
