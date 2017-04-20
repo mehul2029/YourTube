@@ -1,12 +1,6 @@
 {% extends 'myapp/base.html' %}
 
 {% block content-header %} 
-	<h1>{{count}}{{follow}}</h1>
-	{% if count == 0 %}
-		<br><br>
-		<h1 class="centre"><b>No user found. </b></h1>
-		<br>	
-	{% else %}	
 		<h1 class="centre"> Showing results for: {{ q }} </h1>		
 	{% endif %}
 {% endblock %}
