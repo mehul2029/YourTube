@@ -10,6 +10,7 @@ import logging
 import json
 from django.shortcuts import render_to_response
 from pandas import DataFrame
+from django.core.urlresolvers import reverse
 
 #from django.forms import LoginForm
 
@@ -89,6 +90,7 @@ def signup(request):
 			if user is None:
 				user = User.objects.create_user(username=username, email=username, password=password, first_name=first_name, last_name=last_name)
 				login(request, user)
+				UserGraph().insert_user(username)
 				return render(request, 'myapp/home.html')
 			else:
 				error = 'User already exists'
@@ -148,11 +150,14 @@ def db_on_search_click(videoid, username):
 	# Update userinfo table
 	UserInfoDB().upsert(username, videoid, likes=0,dislikes=0)
 
-def db_on_recommendation_click(request):
+def db_on_recommendation_click(request, videoid):
 	# Will increase the weight between the two videos. That is, the two videos watched
 	# sequentially.
 	g = VideosGraph()
 	g.update_weight(vid1, vid2, weight=1.2)
+	url = reverse('view', kwargs={'videoId': videoid})
+	return HttpResponseRedirect(url)
+
 
 def view(request, videoId):
 	db_on_search_click(videoId, request.user.username)
@@ -273,8 +278,9 @@ def global_recommendation(request):
 	recommend_list = set()
 	obj = Recommendations()
 	for v in vid_list:
-		reco = obj.nearest_neighbours(v, 1)
-		recommend_list.add(reco['Neighbor'].ix[0])
+		reco = obj.nearest_neighbours(v, k=1)
+		# if len(reco) != 0:
+		recommend_list.add(reco['Neighbor'][0])
 	recommend_list.difference_update(vid_list)
 
 	v = VideoInfo()
@@ -327,7 +333,7 @@ def global_recommendation(request):
 				'follow_recos' : follow_recos,};
 
 def find_user(request):
-	return render('myapp/find_user.html')
+	return render(request, 'myapp/find_user.html')
 
 def is_user_present(request):
 	count = 0
@@ -335,8 +341,12 @@ def is_user_present(request):
 	if 'q' in request.POST:
 		if len(request.POST['q'])>0:
 			count = obj.find_user(request.POST['q'])
+			follow = 0
+			if count:
+				follow = obj.does_follow_user(request.user.username, request.POST['q'])
 			return render(request, 'myapp/found_user.html', {'count' : count,
-															'user' : request.POST['q']})
+															'u' : request.POST['q'],
+															'follow' : follow})
 	if request.META.get('HTTP_REFERER'):
 		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 	else:
