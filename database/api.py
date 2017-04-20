@@ -222,7 +222,7 @@ class VideosGraph(object):
 		
 		k = str(k)
 		query = """
-		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
 		WHERE v1.vid = '%s'
 		WITH v2, r.weight AS sim
 		ORDER BY sim DESC
@@ -236,23 +236,24 @@ class VideosGraph(object):
 		""" Update the weight of a relation between two videos. """
 		# First if no edge exists, make a new edge.
 		query = """
-		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
 		WHERE v1.vid = '%s' AND v2.vid = '%s'
 		RETURN r
 		""" % (videoid1, videoid2, weight)
 		res = self.graph.run(query)
-		if query.rowcount == 0:
+		if res.rowcount == 0:
 			# need to make this edge
 			query = """
 			MATCH (v1:video), (v2:video)
 			WHERE v1.vid = %s AND v2.vid = %s
 			CREATE (v1)-[r:WEIGHT {weight: %s}]->(v2);
 			""" % (str(videoid1), str(videoid2), str(weight))
+			self.graph.run(query)
 			return
 		# Else if edge already exists, then update the edge weight.
 		# Get old weight. And add the increment to it.
 		query = """
-		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
 		WHERE v1.vid = '%s' AND v2.vid = '%s'
 		RETURN r.weight
 		""" % (videoid1, videoid2, weight)
@@ -261,10 +262,70 @@ class VideosGraph(object):
 		new_weight = original_weight + weight
 		new_weight = str(new_weight)
 		query = """
-		MATCH (v1:video)-[r:WEIGHT]-(v2:video)
+		MATCH (v1:video)-[r:WEIGHT]->(v2:video)
 		WHERE v1.vid = '%s' AND v2.vid = '%s'
 		SET r.weight = %s
 		RETURN r
 		""" % (videoid1, videoid2, new_weight)
 		res = self.graph.run(query)
 		return res
+
+class UserGraph(object):
+	def __init__(self):
+		authenticate("localhost:7474", "YourTube", "pass")
+		self.graph = Graph("http://localhost:7474/db/data/");
+
+	def get_following_list(self, uid):
+		""" Return list of userid of users which are being followed by this user """
+		query = """
+		MATCH (u1:user)-[r:follow]->(u2:user)
+		WHERE u1.uid = '%s'
+		RETURN u2.uid AS follows
+		""" % (uid)
+		res = self.graph.run(query)
+		return res
+
+	def follow_user(self, uid1, uid2):
+		query = """
+		MATCH (u1:user)-[r:follow]->(u2:user)
+		WHERE u1.uid = '%s' And u2.uid = '%s'
+		RETURN r
+		""" % (uid1, uid2)		
+		res = self.graph.run(query)
+		if res.rowcount == 0:
+			query = """
+			MATCH (u1:user)-[r:follow]->(u2:user)
+			WHERE u1.uid = '%s' And u2.uid = '%s'
+			CREATE (u1) -[r:follow]-> (u2)
+			RETURN r
+			""" % (uid1, uid2)
+			res = self.graph.run(query)
+
+	def does_follow_user(uid1, uid2):
+		query = """
+		MATCH (u1:user)-[r:follow]->(u2:user)
+		WHERE u1.uid = '%s' And u2.uid = '%s'
+		RETURN r
+		""" % (uid1, uid2)		
+		res = self.graph.run(query)
+		if res.rowcount == 0:
+			return 0
+		return 1
+
+	def insert_user(uid1):
+		query = """
+		CREATE (u1:user {uid : '%s'})
+		RETURN u1
+		"""
+		res = self.graph.run(query)
+
+	def find_user(uid)
+		query = """
+		MATCH (u:user)
+		WHERE u.uid = '%s'
+		RETURN r
+		""" % (uid)
+		res = self.graph.run(query)
+		if res.rowcount == 0:
+			return 0
+		return 1		

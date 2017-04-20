@@ -16,6 +16,7 @@ from engine.recommend import Recommendations
 import pandas as pd
 
 from operator import itemgetter
+import random
 # Get an instance of a logger
 logger = logging.getLogger('')
 
@@ -285,5 +286,42 @@ def global_recommendation(request):
 		doc = v.get_video(tup[0])
 		watch_again.append(helper_get_content(doc))
 
+	recos = set()
+
+	f = UserGraph()
+	following_list = DataFrame(f.get_following_list(request.user.username).data())
+	obj = UserInfoDB()
+	for i in range(0, len(following_list)):
+		uid = following_list.['follows'][i]
+		vid_list = obj.get_users_liked_video(uid)
+		if vid_list != -1:
+			recos.add(vid_list[0])
+
+	recos = list(recos)
+	result = list()
+	if len(recos) >= 6:
+		ran = random.sample(range(0, len(recos)), 6)
+		for i in ran:
+			result.append(recos[i])
+
+	follow_recos = list()
+	for vid in result:
+		doc = v.get_video(vid)
+		follow_recos.append(helper_get_content(doc))
+
 	return render(request, 'myapp/home.html', {	'watch_again' : watch_again,
-												'recommends' : recommends})
+												'recommends' : recommends,
+												'follow_recos' : follow_recos,})
+
+def is_user_present(request):
+	count = 0
+	obj = UserGraph()
+	if 'q' in request.POST:
+		if len(request.POST['q'])>0:
+			count = obj.find_user(request.POST['q'])
+			return render(request, 'myapp/found_user.html', {'count' : count,
+															'user' : request.POST['q']})
+	if request.META.get('HTTP_REFERER'):
+		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+	else:
+		return redirect('/home/')
