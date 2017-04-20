@@ -295,7 +295,7 @@ def global_recommendation(request):
 	following_list = DataFrame(f.get_following_list(request.user.username).data())
 	obj = UserInfoDB()
 	for i in range(0, len(following_list)):
-		uid = following_list.['follows'][i]
+		uid = following_list['follows'][i]
 		vid_list = obj.get_users_liked_video(uid)
 		if vid_list != -1:
 			recos.add(vid_list[0])

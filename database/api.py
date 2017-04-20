@@ -321,7 +321,7 @@ class UserGraph(object):
 		"""
 		res = self.graph.run(query)
 
-	def find_user(uid)
+	def find_user(uid):
 		query = """
 		MATCH (u:user)
 		WHERE u.uid = '%s'

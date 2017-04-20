@@ -105,6 +105,7 @@
 		    }
   		});
 	});
+
 	$("#dislike").click(function(){
 		console.log("dislike");
 		$.ajax({
@@ -124,23 +125,31 @@
 
 		    },
 		    fail:function(){
-		    	console.log('fail')
+		    	console.log('fail');
 		    }
   		});
 	});
 
-	$( document ).ready(function() {
-		console.log('load');
-    	var like = {{ like }};
-    	if(like == 1){
-    		console.log('liked');
-    		$("#like").addClass('bg-green');
-    	}
-    	else if(like == -1){
-    		console.log('unliked');
-    		$("#dislike").addClass('bg-red');
-    	}
-	});
+	$( window ).on( "load", function() {
+        var like = {{ like }};
+        if( like == 1 ){
+        	$("#like").addClass('bg-green');
+        }
+        else if( like == -1 ){
+        	$("#dislike").addClass('bg-red');
+        }
+    });
+
 </script>
+
+<script>
+    $( document ).ready(function() {
+        console.log( "document loaded" );
+    });
+ 
+    $( window ).on( "load", function() {
+        console.log( "window loaded" );
+    });
+    </script>
 
 {% endblock %}
