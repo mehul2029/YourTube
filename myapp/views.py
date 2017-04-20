@@ -151,11 +151,16 @@ def view(request, videoId):
 	v = VideoInfo()
 	currentvid = v.get_video(videoId)
 	v = Comments()
+	# If you get -1 in comment_list, it means there are no comments yet.
 	comment_list = v.get_comments(videoId)
+	comment_count = 0
+	if comment_list != -1:
+		comment_count = len(comment_list)
 	u = UserInfoDB()
-	like = u.is_like()
+	like = u.is_like(request.user.username,videoId)
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
 												'comment_list' : comment_list,
+												'comment_count' : comment_count,
 												'videos' : videos,
 												'like' : like})
 
@@ -175,10 +180,8 @@ def recommendation(vid, username):
 	obj = Recommendations()
 	v = VideoInfo()
 	records = obj.nearest_neighbours(vid, k=7)
-	refined_records = obj.userhistory(username,records)
-
+	refined_records = obj.user_history(username,records)
 	videos = list()
-
 	for i in range(0, len(refined_records)):
 		videoid = refined_records['Neighbor'][i]
 		doc = v.get_video(videoid)
@@ -192,7 +195,8 @@ def history(request):
 	result = UserInfoDB().get_user_info(request.user.username)
 	if result == -1:
 		return render(request, 'myapp/history.html', {'count':0, 'videos' : videos})	
-	vid_list = [row['videoid'] for row in result]
+	# vid_list = [row['videoid'] for row in result]
+	vid_list = result
 	v = VideoInfo()
 
 	for videoid in vid_list:
@@ -201,15 +205,21 @@ def history(request):
 	count = len(videos)
 	return render(request, 'myapp/history.html', {'count':count, 'videos' : videos})
 
-def liked_videos(request, videoid):
+def liked_videos(request):
 	# Return the list of liked videos of the user.
 	seen = history(request)
 	obj = UserInfoDB()
 	result = list()
 	for vid in seen:
-		if obj.is_like(request.user.username, videoid):
-			result.append(videoid)
-	return result
+		if obj.is_like(request.user.username, vid):
+			result.append(vid)
+	count = len(result)
+	v = VideoInfo()
+	videos = list()
+	for videoid in result:
+		doc = v.get_video(videoid);
+		videos.append(helper_get_content(doc))
+	return render(request, 'myapp/liked_videos.html', {'count':count, 'videos' : videos})
 
 
 def helper_get_content(doc):

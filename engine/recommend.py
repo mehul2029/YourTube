@@ -22,24 +22,29 @@ class Recommendations(object):
 		records = DataFrame(self.graph.get_neighbours(videoid,k).data())
 		return records
 
-	def userhistory(self, username, records):
+	def user_history(self, username, records):
 		""" Sort the records (DataFrame) based on user history. """
 		data = self.userhistory.get_tags(username)
-		tags = [data['tags'][i]['tag'] for i in range(0,len(data))]
-		count = [data['tags'][i]['count'] for i in range(0,len(data))]
-		hashtable = dict()
-		for i in range(0,len(tags)):
-			hashtable[tags[i]] = count[i]
-		weight = 0
-		for i in range(0, len(records)):
-			videotags = self.videoinfo.get_tags(records.Neighbor[i])
-			[x.lower() for x in videotags]
-			common_tags = set(tags).intersection(set(videotags));
-			for t in common_tags:
-				weight += hashtable[common_tags[i]]
-			percentage_tag_match = float(len(common_tags))/len(set(videotags));
-			# Update weight of record now.
-			records.Similarity[i] += percentage_tag_match*100 + weight
+		# Check if user's tags exist. If not we get -1.
+		if data!=-1:
+			tags = [data['tags'][i]['tag'] for i in range(0,len(data))]
+			count = [data['tags'][i]['count'] for i in range(0,len(data))]
+			hashtable = dict()
+			for i in range(0,len(tags)):
+				hashtable[tags[i]] = count[i]
+			weight = 0
+			for i in range(0, len(records)):
+				videotags = self.videoinfo.get_tags(records.Neighbor[i])
+				[x.lower() for x in videotags]
+				common_tags = set(tags).intersection(set(videotags));
+				for t in common_tags:
+					weight += hashtable[common_tags[i]]
+				percentage_tag_match = float(len(common_tags))/len(set(videotags));
+				# Update weight of record now.
+				records.Similarity[i] += percentage_tag_match*100 + weight
 
-		records = records.sort_values('Similarity', ascending=False)
+			records = records.sort_values('Similarity', ascending=False)
+			return records
+		# If user's tags don't exist in database, simply return the records
+		# as they are.
 		return records

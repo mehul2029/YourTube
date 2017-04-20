@@ -7,6 +7,8 @@ from pymongo import *
 from py2neo import *
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, sessionmaker
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy import text
 import time
 
 # SQL
@@ -55,61 +57,61 @@ class UserCredDB(UserDB):
 				# Successful
 				return 1
 
-class UserInfo(object):
-	""" For session queries. """
-	pass
-
 class UserInfoDB(UserDB):
 	""" Information about a user. """
 
 	def __init__(self):
 		super(UserInfoDB, self).__init__()
+		Base = automap_base()
+		Base.prepare(self.engine, reflect=True)
+		self.UserInfoMap = Base.classes.userinfo
 		self.userinfo = Table('userinfo', self.metadata, autoload=True)
-		# self.userinfo_mapper = mapper(UserInfo, self.userinfo)
-		Session = sessionmaker(bind=self.engine)
-		self.session = Session()
 
-	def upsert(self, username, videoid, likes=0, dislikes=0):
-		""" Update or insert the video stats accordingly. """
-		
+	def upsert(self, username, vid, likes=0, dislikes=0):
+		""" Update or insert the video stats accordingly. """		
 		latest_timestamp = (dt.datetime.today()).strftime('%Y-%m-%d %H:%M:%S')
-		data = self.session.query(UserInfo).filter((self.userinfo.c.user_id==username) &
-			(self.userinfo.c.videoid==videoid))
-		if data.count() > 0:
-			for instance in data:
-				instance.latest_timestamp = latest_timestamp
-				instance.viewCount += 1
-				instance.likes = likes
-				instance.dislikes = dislikes
-				self.session.save(data)
-				self.session.flush()
+		session = sessionmaker()
+		session.configure(bind=self.engine)
+		s = session()
+		record=s.query(self.UserInfoMap).filter_by(user_id=username,videoid=vid).first()
+		if record is not None:
+			record.latest_timestamp = latest_timestamp
+			record.viewCount +=1
+			record.likes=likes
+			record.dislikes=dislikes
+			s.commit()
 		else:
 			query = self.userinfo.insert()
-			query.execute(user_id=username, videoid=videoid, latest_timestamp=latest_timestamp,
+			query.execute(user_id=username, videoid=vid, latest_timestamp=latest_timestamp,
 				viewCount=0, likes=likes, dislikes=dislikes)
 		return 1
 
 	def get_user_info(self, username):
-		# query = self.userinfo.select([self.userinfo.c.videoid]).where(self.userinfo.c.user_id==username)
-		query = self.userinfo.select(self.userinfo.c.user_id==username)
-		query = query.execute()
-		if query.rowcount == 0:
+		session = sessionmaker()
+		session.configure(bind=self.engine)
+		s = session()
+		record=s.query(self.UserInfoMap).filter_by(user_id=username).all()
+		if record is None:
 			return -1
-		return query['videoid']
+		else:
+			a = list()
+			for r in record:
+				a.append(r.videoid)
+			return a
 
 	def is_like(self, username, videoid):
-		query = self.userinfo.select([self.userinfo.c.likes, self.userinfo.c.dislikes]).where(
-			and_(self.userinfo.c.user_id==username, self.userinfo.c.videoid==videoid))
-		query = query.execute()
-		if query.rowcount == 0:
+		session = sessionmaker()
+		session.configure(bind=self.engine)
+		s = session()
+		record=s.query(self.UserInfoMap).filter_by(user_id=username,videoid=videoid).all()
+		if record is None:
 			return 0
-		like = q['likes']
-		dislike = q['dislikes']
-		if like==1:
-			return 1
-		elif dislike == 1:
-			return -1
-		return 0
+		else:
+			for r in record:
+				if r.likes==1:
+					return 1
+				else:
+					return 0
 
 	def get_users_liked_video(self, username):
 		# NEED CHANGES
@@ -118,6 +120,7 @@ class UserInfoDB(UserDB):
 		if query.rowcount == 0:
 			return -1
 		return (query['videoid'], query['count'])
+
 
 # MONGODB
 class Video(object):
@@ -137,7 +140,7 @@ class Comments(Video):
 
 	def add_comment(self, username, videoid, comment):
 		time = dt.datetime.today()
-		self.collection.update(
+		self.collection.update_one(
 			{ "videoid": str(videoid) },
 			{ '$push': { "comments": {
 			'$each': { "by": str(username), "timestamp": str(time), "comment": str(comment) } } } }
@@ -145,8 +148,11 @@ class Comments(Video):
 		return 1
 
 	def get_comments(self, videoid):
-		res = self.collection.find( { "videoid": videoid } )
-		return res['comments']
+		res = self.collection.find_one( { "videoid": videoid } )
+		if res is None:
+			return -1
+		else:
+			return res['comments']
 
 
 class VideoInfo(Video):
@@ -157,7 +163,7 @@ class VideoInfo(Video):
 		self.collection = (self.db).video_info
 
 	def get_video(self, videoid):
-		res = self.collection.find({"videoInfo.id" : videoid})
+		res = self.collection.find_one({"videoInfo.id" : videoid})
 		return res
 
 	def search_text(self, query):
@@ -181,24 +187,29 @@ class HistoryTags(Video):
 
 	def upsert_tag(self, username, tag, count=1):
 		tag = tag.lower()
-		res = self.collection.update(
+		res = self.collection.update_one(
 			{"user_id":username, "tags.tag":tag},
-			{ '$inc': {"tags.$.count"} })
+			{ '$inc': {'tags.$.count':1} })
 		if res.modified_count == 0:
-			self.collection.update(
+			self.collection.update_one(
 				{ "user_id": username },
-				{'$push': { tags: {
-				'$each': { "tag": tag, "count": 1 } } } }
+				{'$push': { 'tags': {
+				# '$each': { "tag": tag, "count": 1 } } } }
+				"tag": tag, "count": 1 
+				} } }
 				)
 		for i in range(0, count-1):
-			self.collection.update(
+			self.collection.update_one(
 			{"user_id":username, "tags.tag":tag},
 			{ '$inc': {"tags.$.count"} })
 		return 1
 
 	def get_tags(self, username):
 		res = self.collection.find_one({"user_id": username})
-		return res['videoInfo']['snippet']['tags']
+		if res is None:
+			return -1
+		else:
+			return res['videoInfo']['snippet']['tags']
 
 # NEO4J
 class VideosGraph(object):
