@@ -167,6 +167,7 @@ def view(request, videoId):
 	v = Comments()
 	# If you get -1 in comment_list, it means there are no comments yet.
 	comment_list = v.get_comments(videoId)
+	comment_list.reverse()
 	comment_count = 0
 	if comment_list != -1:
 		comment_count = len(comment_list)
