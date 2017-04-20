@@ -15,6 +15,16 @@
 
 {% block content %} 
 	<div  style="padding-top:20px">
+    {% if suggestion != "" %}
+	<div class="alert alert-danger">
+		<form action="{% url 'search' %}" method="POST">
+			{% csrf_token %}
+			<input type="hidden" name="q" value="{{suggestion}}" />
+	        <h5><i class="icon fa fa-warning"></i>Did You Mean?</h5>
+			<a href="#" onclick="this.parentNode.submit()"><h4>{{ suggestion }}</h4></a>
+		</form>
+    </div>
+    {% endif %}
 	{% for video in videos %}
 		<div class="row">
 			<div class="col-lg-12 col-sm-6">

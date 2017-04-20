@@ -39,7 +39,6 @@ def test_func(request):
 @login_required
 def home(request):
 	videos = global_recommendation(request)
-	logger.info(videos)
 	return render(request, 'myapp/home.html', videos)
 
 def search(request):
@@ -49,6 +48,7 @@ def search(request):
 			q = request.POST['q']
 			suggestion = suggest(q)
 			text = ""
+			logger.info(suggestion)
 			if (suggestion != q):
 				text = suggestion
 			v = VideoInfo()
@@ -173,7 +173,6 @@ def view(request, videoId):
 	u = UserInfoDB()
 	like = u.is_like(request.user.username,videoId)
 	src = 'https://www.youtube.com/embed/' + currentvid['videoInfo']['id']
-	logger.info(comment_list)
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
 												'src' : src,
 												'comment_list' : comment_list,
@@ -386,8 +385,4 @@ def comment(request):
 	if request.method == "POST" and request.is_ajax():
 		vid = request.POST.get('vid')
 		comment = request.POST.get('comment')
-		com = Comments()
-		logger.info(com.add_comment(request.user.username,vid,comment))
-		# v = Comments()
-		# logger.info(v.get_comments(vid))
 		return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")
