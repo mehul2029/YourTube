@@ -245,11 +245,14 @@ class VideosGraph(object):
 		RETURN r
 		""" % (videoid1, videoid2, weight)
 		res = self.graph.run(query)
-		if res.rowcount == 0:
+		flag = 0
+		for d in res:
+			flag = 1
+		if flag == 0:
 			# need to make this edge
 			query = """
 			MATCH (v1:video), (v2:video)
-			WHERE v1.vid = %s AND v2.vid = %s
+			WHERE v1.vid = '%s' AND v2.vid = '%s'
 			CREATE (v1)-[r:WEIGHT {weight: %s}]->(v2);
 			""" % (str(videoid1), str(videoid2), str(weight))
 			self.graph.run(query)
@@ -283,53 +286,56 @@ class UserGraph(object):
 		""" Return list of userid of users which are being followed by this user """
 		query = """
 		MATCH (u1:user)-[r:follow]->(u2:user)
-		WHERE u1.uid = '%s'
-		RETURN u2.uid AS follows
-		""" % (uid)
+		WHERE u1.uid = "%s"
+		RETURN u2.uid AS follow_user
+		""" % (str(uid))
 		res = self.graph.run(query)
 		return res
 
 	def follow_user(self, uid1, uid2):
 		query = """
 		MATCH (u1:user)-[r:follow]->(u2:user)
-		WHERE u1.uid = '%s' And u2.uid = '%s'
+		WHERE u1.uid = "%s" And u2.uid = "%s"
 		RETURN r
-		""" % (uid1, uid2)		
+		""" % (str(uid1), str(uid2))		
 		res = self.graph.run(query)
-		if res.rowcount == 0:
+		flag = 0
+		for d in res:
+			flag = 1
+		if not flag:
 			query = """
 			MATCH (u1:user)-[r:follow]->(u2:user)
-			WHERE u1.uid = '%s' And u2.uid = '%s'
+			WHERE u1.uid = %s And u2.uid = %s
 			CREATE (u1) -[r:follow]-> (u2)
 			RETURN r
-			""" % (uid1, uid2)
+			""" % (str(uid1), str(uid2))
 			res = self.graph.run(query)
 
-	def does_follow_user(uid1, uid2):
+	def does_follow_user(self, uid1, uid2):
 		query = """
 		MATCH (u1:user)-[r:follow]->(u2:user)
-		WHERE u1.uid = '%s' And u2.uid = '%s'
+		WHERE u1.uid = "%s" And u2.uid = "%s"
 		RETURN r
-		""" % (uid1, uid2)		
+		""" % (str(uid1), str(uid2))		
 		res = self.graph.run(query)
-		if res.rowcount == 0:
-			return 0
-		return 1
+		for d in res:
+			return 1
+		return 0
 
-	def insert_user(uid1):
+	def insert_user(self, uid):
 		query = """
-		CREATE (u1:user {uid : '%s'})
+		CREATE (u1:user {uid : "%s"})
 		RETURN u1
-		"""
+		""" % (str(uid))
 		res = self.graph.run(query)
 
-	def find_user(uid):
+	def find_user(self, uid):
 		query = """
 		MATCH (u:user)
-		WHERE u.uid = '%s'
-		RETURN r
-		""" % (uid)
-		res = self.graph.run(query)
-		if res.rowcount == 0:
-			return 0
-		return 1		
+		WHERE u.uid = "%s"
+		RETURN u
+		""" % (str(uid))
+		result = self.graph.run(query)
+		for d in result:
+			return 1
+		return 0
