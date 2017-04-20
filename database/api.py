@@ -66,20 +66,20 @@ class UserInfoDB(UserDB):
 		Base.prepare(self.engine, reflect=True)
 		self.UserInfoMap = Base.classes.userinfo
 		self.userinfo = Table('userinfo', self.metadata, autoload=True)
+		session = sessionmaker()
+		session.configure(bind=self.engine)
+		self.s = session()
 
 	def upsert(self, username, vid, likes=0, dislikes=0):
 		""" Update or insert the video stats accordingly. """		
 		latest_timestamp = (dt.datetime.today()).strftime('%Y-%m-%d %H:%M:%S')
-		session = sessionmaker()
-		session.configure(bind=self.engine)
-		s = session()
-		record=s.query(self.UserInfoMap).filter_by(user_id=username,videoid=vid).first()
+		record=self.s.query(self.UserInfoMap).filter_by(user_id=username,videoid=vid).first()
 		if record is not None:
 			record.latest_timestamp = latest_timestamp
 			record.viewCount +=1
 			record.likes=likes
 			record.dislikes=dislikes
-			s.commit()
+			self.s.commit()
 		else:
 			query = self.userinfo.insert()
 			query.execute(user_id=username, videoid=vid, latest_timestamp=latest_timestamp,
@@ -87,10 +87,7 @@ class UserInfoDB(UserDB):
 		return 1
 
 	def get_user_info(self, username):
-		session = sessionmaker()
-		session.configure(bind=self.engine)
-		s = session()
-		record=s.query(self.UserInfoMap).filter_by(user_id=username).all()
+		record=self.s.query(self.UserInfoMap).filter_by(user_id=username).all()
 		if record is None:
 			return -1
 		else:
@@ -100,10 +97,7 @@ class UserInfoDB(UserDB):
 			return a
 
 	def is_like(self, username, videoid):
-		session = sessionmaker()
-		session.configure(bind=self.engine)
-		s = session()
-		record=s.query(self.UserInfoMap).filter_by(user_id=username,videoid=videoid).all()
+		record=self.s.query(self.UserInfoMap).filter_by(user_id=username,videoid=videoid).all()
 		if record is None:
 			return 0
 		else:
@@ -114,12 +108,14 @@ class UserInfoDB(UserDB):
 					return 0
 
 	def get_users_liked_video(self, username):
-		# NEED CHANGES
-		query = self.userinfo.select(self.userinfo.c.user_id==username)
-		query = query.execute()
-		if query.rowcount == 0:
+		record=s.query(self.UserInfoMap).filter_by(user_id=username, likes=1).all()
+		if record is None:
 			return -1
-		return (query['videoid'], query['count'])
+		else:
+			a = list()
+			for r in record:
+				a.append(r.videoid)
+			return (a, len(a))
 
 
 # MONGODB
