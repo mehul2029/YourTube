@@ -111,15 +111,12 @@ class UserInfoDB(UserDB):
 
 	def get_users_liked_video(self, username):
 		record=self.s.query(self.UserInfoMap).filter_by(user_id=username, likes=1).all()
-		if record is None:
-			return -1
-		else:
-			a = list()
-			b = list()
-			for r in record:
-				a.append(r.videoid)
-				b.append(r.viewCount)
-			return (a, b)
+		a = list()
+		b = list()
+		for r in record:
+			a.append(r.videoid)
+			b.append(r.viewCount)
+		return (a, b)
 
 
 # MONGODB
@@ -146,7 +143,6 @@ class Comments(Video):
 				"by": username, "timestamp": str(time), "comment": comment
 				}}},
 			upsert=True
-			# '$each': { "by": str(username), "timestamp": str(time), "comment": str(comment)  } } }
 			)
 		return 1
 

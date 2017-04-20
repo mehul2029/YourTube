@@ -167,9 +167,9 @@ def view(request, videoId):
 	v = Comments()
 	# If you get -1 in comment_list, it means there are no comments yet.
 	comment_list = v.get_comments(videoId)
-	comment_list.reverse()
 	comment_count = 0
 	if comment_list != -1:
+		comment_list.reverse()
 		comment_count = len(comment_list)
 	u = UserInfoDB()
 	like = u.is_like(request.user.username,videoId)
@@ -290,7 +290,7 @@ def global_recommendation(request):
 		doc = v.get_video(vid)
 		recommends.append(helper_get_content(doc))
 
-		recommends = recommends[0:5]
+	recommends = recommends[0:5]
 
 	watch_it_again_list = list()
 
@@ -312,9 +312,9 @@ def global_recommendation(request):
 	following_list = DataFrame(f.get_following_list(request.user.username).data())
 	obj = UserInfoDB()
 	for i in range(0, len(following_list)):
-		uid = following_list['follows'][i]
-		vid_list = obj.get_users_liked_video(uid)
-		if vid_list != -1:
+		uid = following_list['follow_user'][i]
+		vid_list, b = obj.get_users_liked_video(uid)
+		if len(vid_list):
 			recos.add(vid_list[0])
 
 	recos = list(recos)
@@ -323,7 +323,8 @@ def global_recommendation(request):
 		ran = random.sample(range(0, len(recos)), 6)
 		for i in ran:
 			result.append(recos[i])
-
+	else:
+		result = recos
 	follow_recos = list()
 	for vid in result:
 		doc = v.get_video(vid)
@@ -355,7 +356,7 @@ def is_user_present(request):
 															'q' : request.POST['q'],
 															'follow' : follow})
 	if request.META.get('HTTP_REFERER'):
-		return HttpResponsesponseRedirect(request.META.get('HTTP_REFERER'))
+		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 	else:
 		return redirect('/home/')
 
@@ -389,7 +390,9 @@ def connect_users(request):
 		return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")
 
 def comment(request):
+	obj = Comments()
 	if request.method == "POST" and request.is_ajax():
 		vid = request.POST.get('vid')
 		comment = request.POST.get('comment')
+		obj.add_comment(request.user.username, vid, comment)
 		return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")

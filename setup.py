@@ -10,31 +10,30 @@ if sys.hexversion < 0x30400f0:
     sys.exit(1)
 
 # Set up required databases.
-# def setup_db():
-# 	obj = Videoinfo()
-# 	obj.init_db()
-# 	obj = Videorel()
-# 	obj.init_db()
-# 	obj = UserDB()
-# 	print('Databases set up.')
-# setup_db()
+def setup_db():
+	obj = Videoinfo()
+	obj.init_db()
+	obj = Videorel()
+	obj.init_db()
+	obj = UserDB()
+	print('Databases set up.')
+setup_db()
 
-# obj = UserDB()
 
-# version = "0.1"
+version = "0.1"
 
-# setup(
-# 	name = "YourTube",
-# 	version = version,
-# 	url = "https://github.com/mehul2029/YourTube",
-# 	packages = find_packages(),
-# 	incude_packages_data = True,
-# 	install_requires = [
-# 		'py2neo<=3.1.2',
-# 		'pymongo',
-# 		'sqlalchemy',
-# 		'mysqlclient',
-# 		'pymysql',
-# 		'pandas',
-# 	],
-# )
+setup(
+	name = "YourTube",
+	version = version,
+	url = "https://github.com/mehul2029/YourTube",
+	packages = find_packages(),
+	incude_packages_data = True,
+	install_requires = [
+		'py2neo<=3.1.2',
+		'pymongo',
+		'sqlalchemy',
+		'mysqlclient',
+		'pymysql',
+		'pandas',
+	],
+)
