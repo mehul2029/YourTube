@@ -173,6 +173,7 @@ def view(request, videoId):
 	u = UserInfoDB()
 	like = u.is_like(request.user.username,videoId)
 	src = 'https://www.youtube.com/embed/' + currentvid['videoInfo']['id']
+	logger.info(comment_list)
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
 												'src' : src,
 												'comment_list' : comment_list,
@@ -379,4 +380,14 @@ def connect_users(request):
 		u = request.POST.get('username')
 		obj = UserGraph()
 		obj.follow_user(request.user.username, u)
+		return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")
+
+def comment(request):
+	if request.method == "POST" and request.is_ajax():
+		vid = request.POST.get('vid')
+		comment = request.POST.get('comment')
+		com = Comments()
+		logger.info(com.add_comment(request.user.username,vid,comment))
+		# v = Comments()
+		# logger.info(v.get_comments(vid))
 		return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")

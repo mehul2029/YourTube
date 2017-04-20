@@ -60,8 +60,8 @@
 		        <div class="col-md-12">
 		            <div class="box box-solid">
 		            	<div class="box-header with-border">
-		                	<i class="fa fa-info-circle"></i>
-		              		<h3 class="box-title">Description</h3>
+		                	<i class="fa fa-comments"></i>
+		              		<h3 class="box-title">Comments</h3>
 		            	</div>
 		            	<!-- /.box-header -->
 		            	<div class="box-body">
@@ -69,7 +69,7 @@
 			                  <form class="form-horizontal">
 			                    <div class="form-group margin-bottom-none">
 			                      <div class="col-sm-10">
-			                        <input class="form-control input-sm" placeholder="Response" id="comment">
+			                        <input class="form-control input-sm" placeholder="Type a comment..." id="comment">
 			                      </div>
 			                      <div class="col-sm-2">
 			                        <a class="btn btn-success pull-right btn-block btn-sm" id="send">Comment</a>
@@ -78,16 +78,20 @@
 			                  </form>
 			                </div>
 
+			                {% if comment_count != 0 %}
+			                {% for c in comment_list %}
 			                <div class="post clearfix">
 			                	<div class="row">
 				                	<div class="col-md-3">
-				                          <h4 style="margin:0">Sarah Ross</h4>			                 
+				                          <h4 style="margin:0" class="text-light-blue">{{ c.by }}</h4>			                 
 			                		</div>
 			                		<div class="col-md-9">
-					                    <p>My comment</p>
+					                    <p>{{ c.comment }}</p>
 					                </div>
 			                	</div>
 			                </div>
+			                {% endfor %}
+			                {% endif %}
 			            </div>
 		            </div>
               	</div>
@@ -158,6 +162,7 @@
 		    		csrfmiddlewaretoken: '{{ csrf_token }}' },
 		    success:function(data) {
 		    	if(data.resp == 1){
+		    		location.reload();
 		    	}
 		    },
 		    fail:function(){

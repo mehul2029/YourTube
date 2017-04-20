@@ -141,9 +141,12 @@ class Comments(Video):
 	def add_comment(self, username, videoid, comment):
 		time = dt.datetime.today()
 		self.collection.update_one(
-			{ "videoid": str(videoid) },
+			{ "videoid": videoid },
 			{ '$push': { "comments": {
-			'$each': { "by": str(username), "timestamp": str(time), "comment": str(comment) } } } }
+				"by": username, "timestamp": str(time), "comment": comment
+				}}},
+			upsert=True
+			# '$each': { "by": str(username), "timestamp": str(time), "comment": str(comment)  } } }
 			)
 		return 1
 

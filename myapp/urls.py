@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'^ajax/like/$', views.like, name='ajax-like'),
     url(r'^ajax/dislike/$', views.dislike, name='ajax-dislike'),
     url(r'^ajax/follow/$', views.connect_users, name='ajax-follow'),
+    url(r'^ajax/comment/$', views.comment, name='ajax-comment'),
     url(r'^find_user/$', views.find_user, name='find_user'),
     url(r'^found_user/$', views.is_user_present, name='found_user'),
     url(r'^db_update/(?P<videoId>.+)$', views.db_on_recommendation_click, name='db_update'),
