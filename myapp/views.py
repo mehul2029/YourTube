@@ -334,7 +334,6 @@ def is_user_present(request):
 	else:
 		return redirect('/home/')
 
-<<<<<<< HEAD
 def like(request):
 	if request.method == "POST" and request.is_ajax():
 		vid = request.POST.get('vid')
