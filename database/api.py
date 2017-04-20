@@ -109,7 +109,15 @@ class UserInfoDB(UserDB):
 			return 1
 		elif dislike == 1:
 			return -1
-		return 0	
+		return 0
+
+	def get_users_liked_video(self, username):
+		# NEED CHANGES
+		query = self.userinfo.select(self.userinfo.c.user_id==username)
+		query = query.execute()
+		if query.rowcount == 0:
+			return -1
+		return (query['videoid'], query['count'])
 
 # MONGODB
 class Video(object):

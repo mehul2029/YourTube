@@ -15,6 +15,7 @@ from database.api import *
 from engine.recommend import Recommendations
 import pandas as pd
 
+from operator import itemgetter
 # Get an instance of a logger
 logger = logging.getLogger('')
 
@@ -229,3 +230,45 @@ def helper_get_content(doc):
 
 	video['desc'] = desc
 	return video
+
+def global_recommendation(request):
+	liked_vid_list_org, count_of_liked_vid_list = get_users_liked_video(request.user.username)
+	liked_vid_list = liked_vid_list_org[0:10]
+	vid_list = set()
+	for c in liked_vid_list:
+		vid_list.add(c)
+
+	viewed_vid_list = get_user_info(request.user.username)
+	viewed_vid_list = viewed_vid_list[0:5]
+	for c in viewed_vid_list:
+		vid_list.add(c)
+
+	recommend_list = set()
+	obj = Recommendations()
+	for v in vid_list:
+		reco = obj.nearest_neighbours(v, 1)
+		recommend_list.add(reco['Neighbor'])
+	recommend_list.difference_update(vid_list)
+
+	v = VideoInfo()
+	recommends = list()
+	for vid in recommend_list:
+		doc = v.get_video(vid)
+		recommends.append(helper_get_content(doc))
+
+	watch_it_again_list = list()
+
+	for vid, count in zip(liked_vid_list_org, count_of_liked_vid_list):
+		temp = (vid, count)
+		watch_it_again_list.append(temp)
+	sorted(watch_it_again_list, key=itemgetter(1), reverse=True)
+
+	watch_it_again_list = watch_it_again_list[0:4]
+
+	watch_again = list()
+	for tup in watch_it_again_list:
+		doc = v.get_video(tup[0])
+		watch_again.append(helper_get_content(doc))
+
+	return render(request, 'myapp/home.html', {	'watch_again' : watch_again,
+												'recommends' : recommends})
