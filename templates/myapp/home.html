@@ -8,26 +8,77 @@
 
 {% block content %} 
 
-	Show global recos -(Comment)
-
-	{% comment %}
-	{% for video in recommends %}
-		{% if forloop.counter0|divisibleby:3 %}
+	<div style="margin-top:20px">
 		<div class="row">
-		{% endif %}
-			<div class="col-md-4 col-sm-6">
-				<div class="well well-sm">
-					<a href="{% url 'view' videoId=video.id %}">
-						<img src="{{ video.thumbnail.medium }}">
-						<h4>{{ video.title }}</h4>
-						<p>{{ video.desc }}</p>
-					</a>
-				</div>
+				<div class="col-md-12">
+				<div class="nav-tabs-custom">
+		            <ul class="nav nav-tabs">
+		                <li class="active"><a href="#recos" data-toggle="tab">Recommendations</a></li>
+		                <li><a href="#again" data-toggle="tab">Watch Again</a></li>
+		                <li><a href="#friends" data-toggle="tab">Watched by friends</a></li>
+		            </ul>
+		            <div class="tab-content">
+		            	<div class="tab-pane active" id="recos">
+		            		<div>
+			            	{% for video in recommends %}
+								{% if forloop.counter0|divisibleby:3 %}
+									</div>
+									<div class="row">
+								{% endif %}
+								<div class="col-md-4 col-sm-6">
+									<div class="well well-sm">
+										<a href="{% url 'view' videoId=video.id %}">
+											<img src="{{ video.thumbnail.medium }}">
+											<h4>{{ video.title }}</h4>
+										</a>
+										<p>{{ video.desc }}</p>
+									</div>
+								</div>
+							{% endfor %}
+							</div>
+		                </div>
+						<div class="tab-pane" id="friends">
+							<div>
+							{% for video in follow_recos %}
+								{% if forloop.counter0|divisibleby:3 %}
+									</div>
+									<div class="row">
+								{% endif %}
+								<div class="col-md-4 col-sm-6">
+									<div class="well well-sm">
+										<a href="{% url 'view' videoId=video.id %}">
+											<img src="{{ video.thumbnail.medium }}">
+											<h4>{{ video.title }}</h4>
+										</a>
+										<p>{{ video.desc }}</p>
+									</div>
+								</div>
+							{% endfor %}
+							</div>
+		                </div>
+						<div class="tab-pane" id="again">
+							{% for video in watch_again %}
+								<div>
+								{% if forloop.counter0|divisibleby:3 %}
+									</div>
+									<div class="row">
+								{% endif %}
+								<div class="col-md-4 col-sm-6">
+									<div class="well well-sm">
+										<a href="{% url 'view' videoId=video.id %}">
+											<img src="{{ video.thumbnail.medium }}">
+											<h4>{{ video.title }}</h4>
+										</a>
+										<p>{{ video.desc }}</p>
+									</div>
+								</div>
+							{% endfor %}
+							</div>
+		                </div>
+			        </div>
+			    </div>
 			</div>
-		{% if forloop.counter|divisibleby:3 %}
-		</div> 
-		{% endif %}
-	{% endfor %}
-	{% endcomment %}
+		</div>
+	</div>
 
 {% endblock %}

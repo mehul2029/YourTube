@@ -155,7 +155,7 @@ def db_on_recommendation_click(request):
 	g.update_weight(vid1, vid2, weight=1.2)
 
 def view(request, videoId):
-	# db_on_search_click(videoId, request.user.username)
+	db_on_search_click(videoId, request.user.username)
 	videos = recommendation(videoId, request.user.username)
 	v = VideoInfo()
 	currentvid = v.get_video(videoId)
@@ -282,6 +282,8 @@ def global_recommendation(request):
 	for vid in recommend_list:
 		doc = v.get_video(vid)
 		recommends.append(helper_get_content(doc))
+
+		recommends = recommends[0:5]
 
 	watch_it_again_list = list()
 
