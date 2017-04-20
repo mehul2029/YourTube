@@ -54,6 +54,46 @@
 		        </div>
 		        <!-- ./col -->
 			</div>
+
+			<!-- Comments -->
+			<div class="row" style="margin-top: 20px">
+		        <div class="col-md-12">
+		            <div class="box box-solid">
+		            	<div class="box-header with-border">
+		                	<i class="fa fa-info-circle"></i>
+		              		<h3 class="box-title">Description</h3>
+		            	</div>
+		            	<!-- /.box-header -->
+		            	<div class="box-body">
+		            		<div class="post clearfix">
+			                  <form class="form-horizontal">
+			                    <div class="form-group margin-bottom-none">
+			                      <div class="col-sm-10">
+			                        <input class="form-control input-sm" placeholder="Response" id="comment">
+			                      </div>
+			                      <div class="col-sm-2">
+			                        <a class="btn btn-success pull-right btn-block btn-sm" id="send">Comment</a>
+			                      </div>
+			                    </div>
+			                  </form>
+			                </div>
+
+			                <div class="post clearfix">
+			                	<div class="row">
+				                	<div class="col-md-3">
+				                          <h4 style="margin:0">Sarah Ross</h4>			                 
+			                		</div>
+			                		<div class="col-md-9">
+					                    <p>My comment</p>
+					                </div>
+			                	</div>
+			                </div>
+			            </div>
+		            </div>
+              	</div>
+            </div>
+
+			<!-- /Comments -->
 		</div>
 		<div class="col-md-4 white">
 			<h3 class="centre">Recommentations</h3>
@@ -98,6 +138,26 @@
 		    	else{
 		    		$("#like").removeClass('bg-green');
 		    		$("#dislike").removeClass('bg-red');
+		    	}
+		    },
+		    fail:function(){
+		    	console.log('fail')
+		    }
+  		});
+	});
+
+	$("#send").click(function(){
+		console.log("in send");
+		var comment = $("#comment").val();
+		console.log(comment);
+		$.ajax({
+		    url: "{% url 'ajax-comment' %}",  
+		    type: "POST",
+		    data: { 'vid' : '{{ currentvid.videoInfo.id }}',
+		    		'comment' : comment,
+		    		csrfmiddlewaretoken: '{{ csrf_token }}' },
+		    success:function(data) {
+		    	if(data.resp == 1){
 		    	}
 		    },
 		    fail:function(){
