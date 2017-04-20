@@ -1,6 +1,7 @@
 {% extends 'myapp/base.html' %}
 
 {% block content-header %} 
+<section class="content-header">
 	{% if count == 0 %}
 		<br><br>
 		<h1 class="centre"><b>You don't like anything yet! </b></h1>
@@ -8,6 +9,7 @@
 	{% else %}	
 		<h1 class="centre"> Liked Videos </h1>
 	{% endif %}
+</section>
 {% endblock %}
 
 {% block content %} 

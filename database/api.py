@@ -104,6 +104,8 @@ class UserInfoDB(UserDB):
 			for r in record:
 				if r.likes==1:
 					return 1
+				elif r.dislikes == 1:
+					return -1
 				else:
 					return 0
 

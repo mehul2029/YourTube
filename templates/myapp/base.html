@@ -73,12 +73,10 @@
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <section class="content-header">
       {% block content-header %} {% endblock %}
-    </section>
 
     <!-- Main content -->
-    <section class="content">
+    <section class="content" style="padding: 0px 15px 0 15px">
     {% block content %} {% endblock %}
     </section>
     <!-- /.content -->
@@ -94,6 +92,9 @@
 </div>
 <!-- ./wrapper -->
 
+
+{% block script %}
+{% endblock %}
 
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>

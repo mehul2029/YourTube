@@ -14,5 +14,7 @@ urlpatterns = [
     url(r'^logout/$',views.logout_view, name='logout'),
     url(r'^history/$', views.history, name='history'),
     url(r'^liked_videos/$', views.liked_videos, name='liked_videos'),
+    url(r'^ajax/like/$', views.like, name='ajax-like'),
+    url(r'^ajax/dislike/$', views.dislike, name='ajax-dislike'),
 	# url(r'^logout/$', 'django.contrib.auth.views.logout', {'next_page': '/successfully_logged_out/'}, name='logout'),
 ]

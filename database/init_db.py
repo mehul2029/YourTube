@@ -159,12 +159,12 @@ class UserDB(object):
 	def __init__(self):
 		# Requires a 'user' database in which the tables are created.
 		engine = create_engine(
-			"mysql+pymysql://root:killthejoker@localhost/user?host=localhost?port=3306")
+			"mysql+pymysql://root:root@localhost/user?host=localhost?port=3306")
 		engine.echo = True
 		conn = engine.connect()
 		metadata = MetaData(engine)
 		userinfo = Table('userinfo', metadata,
-			Column('user_id', Integer, primary_key=True),
+			Column('user_id', String(30), primary_key=True),
 			Column('videoid', String(30), primary_key=True),
 			Column('latest_timestamp', String(30)),
 			Column('viewCount', Integer),

@@ -1,7 +1,9 @@
 {% extends 'myapp/base.html' %}
 
 {% block content-header %} 
-	<h1 class="centre"> YOLO </h1>		
+<section class="content-header">
+	<h1 class="centre"> YOLO </h1>
+</section>		
 {% endblock %}
 
 {% block content %} 
@@ -16,7 +18,7 @@
 			<div class="col-md-4 col-sm-6">
 				<div class="well well-sm">
 					<a href="{% url 'view' videoId=video.id %}">
-						<img src="{{ video.thumbnail }}">
+						<img src="{{ video.thumbnail.medium }}">
 						<h4>{{ video.title }}</h4>
 						<p>{{ video.desc }}</p>
 					</a>

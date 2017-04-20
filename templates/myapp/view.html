@@ -7,28 +7,140 @@
 
 	<div class="row">
 		<div class="col-md-8">
-			<h1 class="centre"> {{ currentvid.videoInfo.snippet.title }} </h1>
+			<h2 class="centre"> {{ currentvid.videoInfo.snippet.title }} </h2>
+			<div class="centre"><iframe width="640" height="360" src="{{ src }}" frameborder="0" allowfullscreen></iframe></div>
+			<br>
+			<div class="row centre">
+				<div class="col-md-4">
+					<div class="small-box bg-aqua" style="margin:0">
+			            <div class="inner centre">
+			              <h3><i class="fa fa-tv"></i> {{ currentvid.videoInfo.statistics.viewCount }}</h3>
+			            </div>
+			            
+			        </div>
+			    </div>
+			    <div class="col-md-4">
+					<div class="small-box bg-maroon disabled color-palette" style="margin:0">
+			            <div class="inner centre">
+			              <h3><i class="fa fa-heart-o"></i> {{ currentvid.videoInfo.statistics.likeCount }}</h3>
+			            </div>
+			        </div>
+			    </div>
+			    <div class="col-md-4" style="padding-top: 10px">
+	    			<!-- <div class="btn-group"> -->
+		    			<a class="btn btn-app btn-flat" style="padding-top:18px" id="like">
+		                	<i class="fa fa-thumbs-o-up"></i>
+		              	</a>
+		              	<a class="btn btn-app" style="padding-top:18px" id="dislike">
+		                	<i class="fa fa-thumbs-o-down"></i>
+		              	</a>
+	    			<!-- </div> -->
+			    </div>
+			</div>
+			<div class="row" style="margin-top: 20px">
+		        <div class="col-md-12">
+		          <div class="box box-solid">
+		            <div class="box-header with-border">
+		              <i class="fa fa-info-circle"></i>
+		              <h3 class="box-title">Description</h3>
+		            </div>
+		            <!-- /.box-header -->
+		            <div class="box-body">
+		              <p>{{ currentvid.videoInfo.snippet.description }}</p>
+		            </div>
+		            <!-- /.box-body -->
+		          </div>
+		          <!-- /.box -->
+		        </div>
+		        <!-- ./col -->
+			</div>
 		</div>
-		<div class="col-md-4">Recos here</div>
-	</div>
-	{% for video in videos %}
-		<div class="row">
-			<div class="col-lg-12 col-sm-6">
-				<div class="well well-sm">
-					<div class="row">
-						<div class="col-sm-4">
-							<img src="{{ video.thumbnail }}">
-						</div>
-						<div class="col-sm-8">
-							<a href="{% url 'view' videoId=video.id %}">
-								<h3>{{ video.title }}</h3>
-							</a>
-							<p>{{ video.desc }}</p>
+		<div class="col-md-4 white">
+			<h3 class="centre">Recommentations</h3>
+			{% for video in videos %}
+				<div class="row">
+					<div class="col-lg-12 col-sm-6">
+						<div class="well well-sm">
+							<div class="row">
+								<div class="col-sm-5">
+									<img src="{{ video.thumbnail.default }}">
+								</div>
+								<div class="col-sm-7">
+									<a href="{% url 'view' videoId=video.id %}">
+										<p><b>{{ video.title }}</b></p>
+									</a>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			{% endfor %}
 		</div>
-	{% endfor %}
+	</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+	$("#like").click(function(){
+		console.log("like");
+		$.ajax({
+		    url: "{% url 'ajax-like' %}",  
+		    type: "POST",
+		    data: { 'vid' : '{{ currentvid.videoInfo.id }}',
+		    		csrfmiddlewaretoken: '{{ csrf_token }}' },
+		    success:function(data) {
+		    	if(data.resp == 1){
+		    		$("#like").addClass('bg-green');
+		    		$("#dislike").removeClass('bg-red');
+		    	}
+		    	else{
+		    		$("#like").removeClass('bg-green');
+		    		$("#dislike").removeClass('bg-red');
+		    	}
+		    },
+		    fail:function(){
+		    	console.log('fail')
+		    }
+  		});
+	});
+	$("#dislike").click(function(){
+		console.log("dislike");
+		$.ajax({
+		    url: "{% url 'ajax-dislike' %}",  
+		    type: "POST",
+		    data: { 'vid' : '{{ currentvid.videoInfo.id }}',
+		    		csrfmiddlewaretoken: '{{ csrf_token }}' },
+		    success:function(data) {
+		    	if(data.resp == -1){
+		    		$("#dislike").addClass('bg-red');
+		    		$("#like").removeClass('bg-green');
+		    	}
+		    	else{
+		    		$("#dislike").removeClass('bg-red');
+		    		$("#like").removeClass('bg-green');
+		    	}
+
+		    },
+		    fail:function(){
+		    	console.log('fail')
+		    }
+  		});
+	});
+
+	$( document ).ready(function() {
+		console.log('load');
+    	var like = {{ like }};
+    	if(like == 1){
+    		console.log('liked');
+    		$("#like").addClass('bg-green');
+    	}
+    	else if(like == -1){
+    		console.log('unliked');
+    		$("#dislike").addClass('bg-red');
+    	}
+	});
+</script>
 
 {% endblock %}

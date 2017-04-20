@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.decorators import login_required
 import logging
+import json
 
 #from django.forms import LoginForm
 
@@ -52,7 +53,6 @@ def search(request):
 
 			for doc in result:
 				video = helper_get_content(doc)
-				logger.info(doc['score'])
 				video['score'] = str(doc['score'])
 				videos.append(video)
 
@@ -131,7 +131,6 @@ def login_view(request):
 
 # Isn't really used. Using django.contrib.auth.views.logout instead.
 def logout_view(request):
-	logger.info('in logout')
 	logout(request)
 	return redirect('login')
 
@@ -164,7 +163,9 @@ def view(request, videoId):
 		comment_count = len(comment_list)
 	u = UserInfoDB()
 	like = u.is_like(request.user.username,videoId)
+	src = 'https://www.youtube.com/embed/' + currentvid['videoInfo']['id']
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
+												'src' : src,
 												'comment_list' : comment_list,
 												'comment_count' : comment_count,
 												'videos' : videos,
@@ -230,17 +231,19 @@ def liked_videos(request):
 
 def helper_get_content(doc):
 	video = {}
-	video['thumbnail'] =  doc['videoInfo']['snippet']['thumbnails']['medium']['url']
+	video['thumbnail'] =  { 'medium': doc['videoInfo']['snippet']['thumbnails']['medium']['url'], 
+							'default': doc['videoInfo']['snippet']['thumbnails']['default']['url'] }
 	video['title'] = doc['videoInfo']['snippet']['title']
 	video['view'] = doc['videoInfo']['statistics']['viewCount']
+	video['likes'] = doc['videoInfo']['statistics']['likeCount']
 	video['id'] = doc['videoInfo']['id']
 
 	desc = doc['videoInfo']['snippet']['description'].split(' ')
-	desc = desc[0:25]
+	desc = desc[0:60]
 	temp = ''
 	for i in desc:
 		temp = temp + i + ' '
-	desc = temp[0:120]
+	desc = temp[0:200]
 	if (len(temp) > len(desc)):
 		desc = desc + ' ...'
 
@@ -325,3 +328,25 @@ def is_user_present(request):
 		return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 	else:
 		return redirect('/home/')
+
+def like(request):
+	if request.method == "POST" and request.is_ajax():
+		vid = request.POST.get('vid')
+		u = UserInfoDB()
+		if u.is_like(request.user.username,vid) == 1:
+			u.upsert(request.user.username, vid, likes=0, dislikes=0)
+			return HttpResponse(json.dumps({'resp': 0 }), content_type="application/json")
+		else:
+			u.upsert(request.user.username, vid, likes=1, dislikes=0)
+			return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")
+
+def dislike(request):
+	if request.method == "POST" and request.is_ajax():
+		vid = request.POST.get('vid')
+		u = UserInfoDB()
+		if u.is_like(request.user.username,vid) == -1:
+			u.upsert(request.user.username, vid, likes=0, dislikes=0)
+			return HttpResponse(json.dumps({'resp': 0 }), content_type="application/json")
+		else:
+			u.upsert(request.user.username, vid, likes=0, dislikes=1)
+			return HttpResponse(json.dumps({'resp': -1 }), content_type="application/json")

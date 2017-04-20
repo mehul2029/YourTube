@@ -1,6 +1,7 @@
 {% extends 'myapp/base.html' %}
 
 {% block content-header %} 
+<section class="content-header">
 	{% if count == 0 %}
 		<br><br>
 		<h1 class="centre"><b>Wow. So empty. </b></h1>
@@ -9,23 +10,40 @@
 	{% else %}	
 		<h1 class="centre"> Showing results for: {{ q }} </h1>		
 	{% endif %}
+</section>
 {% endblock %}
 
 {% block content %} 
 
 	{% for video in videos %}
-		<div class="row">
+		<div class="row" style="padding-top:20px">
 			<div class="col-lg-12 col-sm-6">
-				<div class="well well-sm">
+				<div class="well well-sm white">
 					<div class="row">
 						<div class="col-sm-4">
-							<img src="{{ video.thumbnail }}">
+							<img src="{{ video.thumbnail.medium }}">
 						</div>
 						<div class="col-sm-8">
 							<a href="{% url 'view' videoId=video.id %}">
-								<h3>{{ video.title }}</h3>
+								<h3 style="margin-top:0">{{ video.title }}</h3>
 							</a>
 							<p>{{ video.desc }}</p>
+							<br>
+							<div class="col-md-6">
+								<div class="small-box bg-orange" style="margin:0">
+						            <div class="inner centre">
+						              <h3><i class="fa fa-tv"></i> {{ video.view }}</h3>
+						            </div>
+						            
+						        </div>
+						    </div>
+						    <div class="col-md-6">
+								<div class="small-box bg-green" style="margin:0">
+						            <div class="inner centre">
+						              <h3><i class="fa fa-thumbs-o-up"></i> {{ video.likes }}</h3>
+						            </div>
+						        </div>
+						    </div>
 						</div>
 					</div>
 				</div>
