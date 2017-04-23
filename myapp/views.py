@@ -111,7 +111,8 @@ def login_view(request):
 			if user is not None:
 				# Redirect to a success page.
 				login(request, user)
-				return render(request, 'myapp/home.html')
+				# return render(request, 'myapp/home.html')
+				return redirect ('/home/')
 			else:
 				error = 'Invalid credentials'
 				return render(request, 'myapp/login.html', { 'error': error })
@@ -148,7 +149,7 @@ def db_on_search_click(videoid, username):
 		obj.upsert_tag(username, tag, count=1)
 
 	# Update userinfo table
-	UserInfoDB().upsert(username, videoid, likes=0,dislikes=0)
+	# UserInfoDB().upsert(username, videoid, likes=0,dislikes=0)
 
 def db_on_recommendation_click(request, newvideoId, oldvideoId):
 	# Will increase the weight between the two videos. That is, the two videos watched
@@ -160,7 +161,8 @@ def db_on_recommendation_click(request, newvideoId, oldvideoId):
 
 
 def view(request, videoId):
-	db_on_search_click(videoId, request.user.username)
+	# db_on_search_click(videoId, request.user.username)
+	
 	videos = recommendation(videoId, request.user.username)
 	v = VideoInfo()
 	currentvid = v.get_video(videoId)
@@ -173,6 +175,13 @@ def view(request, videoId):
 		comment_count = len(comment_list)
 	u = UserInfoDB()
 	like = u.is_like(request.user.username,videoId)
+	if like == 1:
+		UserInfoDB().upsert(request.user.username, videoId, likes=1,dislikes=0)
+	elif like == -1:
+		UserInfoDB().upsert(request.user.username, videoId, likes=0,dislikes=1)
+	else:
+		UserInfoDB().upsert(request.user.username, videoId, likes=0,dislikes=0)
+		
 	src = 'https://www.youtube.com/embed/' + currentvid['videoInfo']['id']
 	return render(request, 'myapp/view.html', { 'currentvid' : currentvid,
 												'src' : src,
@@ -368,6 +377,7 @@ def like(request):
 			u.upsert(request.user.username, vid, likes=0, dislikes=0)
 			return HttpResponse(json.dumps({'resp': 0 }), content_type="application/json")
 		else:
+			db_on_search_click(vid, request.user.username)
 			u.upsert(request.user.username, vid, likes=1, dislikes=0)
 			return HttpResponse(json.dumps({'resp': 1 }), content_type="application/json")
 
